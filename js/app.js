@@ -6,36 +6,39 @@ const root   = document.getElementById('anchors-root');
 const DEFAULT_MODEL_SCALE = 0.22;
 const DEFAULT_MODEL_POSY  = 0.06;
 const DEFAULT_MODEL_ROTY  = 0;
+const DEFAULT_MODEL_POSX  = 0.25; // 👉 todos los modelos se moverán a la derecha
 
-// ===== Mapeo por país (bandera + modelo 3D asociado) =====
+// ===== Mapeo por país =====
 const MAP = [
-  { imgId:'flag0',  label:'ARABIA SAUDITA',  modelId:'mdlArabia',  tx:{ scale:0.18, posY:0.05, rotY:0 } },
-  { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',  tx:{ scale:0.16, posY:0.04, rotY:10 } },
-  { imgId:'flag2',  label:'ARGENTINA',       modelId:'mdlArgentina',tx:{ scale:0.18, posY:0.05, rotY:-15 } },
-  { imgId:'flag3',  label:'AUSTRALIA',       modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.15, posY:0.04, rotY:0 } },
-  { imgId:'flag6',  label:'CANADÁ',          modelId:'mdlCanada',   tx:{ scale:0.18, posY:0.05, rotY:15 } },
-  { imgId:'flag7',  label:'CATAR',           modelId:'mdlDonut',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag8',  label:'COLOMBIA',        modelId:'mdlCoffee',   tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag9',  label:'COREA DEL SUR',   modelId:'mdlCorea',    tx:{ scale:0.18, posY:0.05, rotY:0 } },
-  { imgId:'flag10', label:'COSTA DE MARFIL', modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag11', label:'ECUADOR',         modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag12', label:'ESTADOS UNIDOS',  modelId:'mdlCheese',   tx:{ scale:0.18, posY:0.05, rotY:0 } },
-  { imgId:'flag13', label:'INGLATERRA',      modelId:'mdlCoffee',   tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag14', label:'IRÁN',            modelId:'mdlDonut',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag15', label:'JAPÓN',           modelId:'mdlJapon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag16', label:'JORDANIA',        modelId:'mdlCheese',   tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag17', label:'MÉXICO',          modelId:'mdlMexico',   tx:{ scale:0.18, posY:0.05, rotY:20 } },
-  { imgId:'flag18', label:'PARAGUAY',        modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag19', label:'SENEGAL',         modelId:'mdlBote',     tx:{ scale:0.15, posY:0.04, rotY:0 } },
-  { imgId:'flag20', label:'SUDÁFRICA',       modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
-  { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, rotY:0 } }
+  { imgId:'flag0',  label:'ARABIA SAUDITA',  modelId:'mdlArabia',  tx:{ scale:0.12, posY:0.04, posX:0.25, rotY:0 } }, // más chico
+  { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',  tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:10 } },
+  { imgId:'flag2',  label:'ARGENTINA',       modelId:'mdlArgentina',tx:{ scale:0.18, posY:0.05, posX:0.25, rotY:-15 } },
+  { imgId:'flag3',  label:'AUSTRALIA',       modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.15, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag6',  label:'CANADÁ',          modelId:'mdlCanada',   tx:{ scale:0.18, posY:0.05, posX:0.25, rotY:15 } },
+  { imgId:'flag7',  label:'CATAR',           modelId:'mdlDonut',    tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag8',  label:'COLOMBIA',        modelId:'mdlCoffee',   tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag9',  label:'COREA DEL SUR',   modelId:'mdlCorea',    tx:{ scale:0.18, posY:0.05, posX:0.25, rotY:0 } },
+  { imgId:'flag10', label:'COSTA DE MARFIL', modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag11', label:'ECUADOR',         modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag12', label:'ESTADOS UNIDOS',  modelId:'mdlCheese',   tx:{ scale:0.18, posY:0.05, posX:0.25, rotY:0 } },
+  { imgId:'flag13', label:'INGLATERRA',      modelId:'mdlCoffee',   tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag14', label:'IRÁN',            modelId:'mdlDonut',    tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag15', label:'JAPÓN',           modelId:'mdlJapon',    tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag16', label:'JORDANIA',        modelId:'mdlCheese',   tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag17', label:'MÉXICO',          modelId:'mdlMexico',   tx:{ scale:0.18, posY:0.05, posX:0.25, rotY:20 } },
+  { imgId:'flag18', label:'PARAGUAY',        modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag19', label:'SENEGAL',         modelId:'mdlBote',     tx:{ scale:0.15, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag20', label:'SUDÁFRICA',       modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } },
+  { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, posX:0.25, rotY:0 } }
 ];
 
 // ===== Helpers =====
 const pop = (el, to, dur = 240) =>
-  el?.setAttribute('animation__scale', { property:'scale', to:`${to} ${to} ${to}`, dur, easing:'easeOutCubic' });
+  el?.setAttribute('animation__scale', {
+    property:'scale', to:`${to} ${to} ${to}`, dur, easing:'easeOutCubic'
+  });
 
 function addImage(anchor, imgId) {
   if (!document.getElementById(imgId))
@@ -60,26 +63,24 @@ function addModel(anchor, modelId, tx = {}) {
   const scale = tx.scale ?? DEFAULT_MODEL_SCALE;
   const rotY  = tx.rotY  ?? DEFAULT_MODEL_ROTY;
   const posY  = tx.posY  ?? DEFAULT_MODEL_POSY;
+  const posX  = tx.posX  ?? DEFAULT_MODEL_POSX;
 
   const model = document.createElement('a-entity');
   model.setAttribute('gltf-model', `#${modelId}`);
-  model.setAttribute('position', `0 ${posY} 0.02`);
+  model.setAttribute('position', `${posX} ${posY} 0.02`);
   model.setAttribute('rotation', `0 ${rotY} 0`);
   model.setAttribute('scale', `${scale} ${scale} ${scale}`);
   model.setAttribute('animation__float',
-    'property: position; to: 0 0.12 0.02; dur:1200; easing:easeInOutSine; loop:true; dir:alternate');
+    'property: position; to: 0.25 0.12 0.02; dur:1200; easing:easeInOutSine; loop:true; dir:alternate');
   anchor.appendChild(model);
 }
 
-// ===== Crear anchors dinámicamente =====
 function buildAnchors() {
   MAP.forEach((cfg, i) => {
     const anchor = document.createElement('a-entity');
     anchor.setAttribute('mindar-image-target', `targetIndex: ${i}`);
 
-    // bandera
     if (cfg.imgId) addImage(anchor, cfg.imgId);
-    // modelo
     if (cfg.modelId) addModel(anchor, cfg.modelId, cfg.tx);
 
     // etiqueta
@@ -102,7 +103,6 @@ function buildAnchors() {
 
     anchor.appendChild(label);
 
-    // eventos AR
     anchor.addEventListener('targetFound', () => {
       status.style.display = 'none';
       label.setAttribute('visible', 'true');
@@ -131,7 +131,7 @@ window.addEventListener('load', () => {
   buildAnchors();
 });
 
-// ===== Debug rápido (teclas para ajustar escala/altura en vivo) =====
+// ===== Debug rápido =====
 window.addEventListener('keydown', (e)=>{
   if (e.key === 'y') { window.__gScale = (window.__gScale ?? DEFAULT_MODEL_SCALE) * 0.9;  console.log('scale', window.__gScale); }
   if (e.key === 'x') { window.__gScale = (window.__gScale ?? DEFAULT_MODEL_SCALE) / 0.9;  console.log('scale', window.__gScale); }
