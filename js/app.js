@@ -6,7 +6,7 @@ const root   = document.getElementById('anchors-root');
 const DEFAULT_MODEL_SCALE = 0.14;  // más chico global
 const DEFAULT_MODEL_POSY  = 0.05;  // un poco más abajo
 const DEFAULT_MODEL_ROTY  = 0;
-const DEFAULT_MODEL_POSX  = 0.35;  // 👉 todos a la derecha
+const DEFAULT_MODEL_POSX  = 0.53;  // 👉 todos a la derecha
 
 // ===== Mapeo por país =====
 // Si algún país sigue grande/alto, ajusta su tx puntual (scale/posY/posX/rotY).
@@ -15,8 +15,8 @@ const MAP = [
   { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',   tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:10 } },
   { imgId:'flag2',  label:'ARGENTINA',       modelId:'mdlArgentina',tx:{ scale:0.70, posY:0.04, posX:0.35, rotY:-10 } }, // debug abajo
   { imgId:'flag3',  label:'AUSTRALIA',       modelId:'mdlBalon',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.11, posY:0.04, posX:0.35, rotY:0 } },
+  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.70, posY:0.04, posX:0.35, rotY:0 } },
+  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.70, posY:0.04, posX:0.35, rotY:0 } },
   { imgId:'flag6',  label:'CANADÁ',          modelId:'mdlCanada',   tx:{ scale:0.13, posY:0.05, posX:0.36, rotY:12 } },
   { imgId:'flag7',  label:'CATAR',           modelId:'mdlDonut',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
   { imgId:'flag8',  label:'COLOMBIA',        modelId:'mdlCoffee',   tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
