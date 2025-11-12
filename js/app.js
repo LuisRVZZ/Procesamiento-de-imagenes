@@ -1,165 +1,127 @@
-const logEl = document.getElementById('log');
-const video = document.getElementById('preview');
-const fsBtn = document.getElementById('fsBtn');
-const switchBtn = document.getElementById('switchBtn');
-const torchBtn = document.getElementById('torchBtn');
+// --- Rotación con dedo/mouse y pinch-zoom ---
+AFRAME.registerComponent('drag-rotate-scale', {
+  schema: {
+    rotateSpeed: {type: 'number', default: 0.4},
+    scaleMin:   {type: 'number', default: 0.005},
+    scaleMax:   {type: 'number', default: 0.2},
+    enableX:    {type: 'boolean', default: true},   // rotar en X
+    enableY:    {type: 'boolean', default: true}    // rotar en Y
+  },
+  init: function () {
+    this.dragging = false;
+    this.lastX = 0; this.lastY = 0;
+    this.startScale = this.el.object3D.scale.clone();
+    this.startRot = this.el.object3D.rotation.clone();
 
-let currentStream = null;
-let videoInputs = [];      // dispositivos de video
-let currentDeviceId = null;
-let torchOn = false;
+    const scene = this.el.sceneEl;
+    const canvas = scene.canvas || scene.renderer?.domElement;
 
-function log(msg) {
-  console.log(msg);
-  if (!logEl) return;
-  const txt = (typeof msg === 'string') ? msg : JSON.stringify(msg, null, 2);
-  logEl.textContent = txt;
-}
+    const onReady = () => {
+      this.canvas = scene.canvas || scene.renderer?.domElement;
+      this.addListeners();
+    };
 
-function stopStream() {
-  if (currentStream) {
-    currentStream.getTracks().forEach(t => t.stop());
-    currentStream = null;
+    if (canvas) onReady();
+    else scene.addEventListener('render-target-loaded', onReady);
+  },
+  addListeners: function(){
+    const c = this.canvas;
+
+    // Rotación (un dedo / mouse)
+    this._onDown = (e)=> {
+      if (e.pointerType === 'touch' && e.isPrimary === false) return;
+      this.dragging = true;
+      this.lastX = e.clientX; this.lastY = e.clientY;
+    };
+    this._onMove = (e)=> {
+      if (!this.dragging) return;
+      const dx = e.clientX - this.lastX;
+      const dy = e.clientY - this.lastY;
+      const rot = this.el.object3D.rotation;
+      if (this.data.enableY) rot.y -= dx * 0.002 * this.data.rotateSpeed; // Yaw
+      if (this.data.enableX) rot.x -= dy * 0.002 * this.data.rotateSpeed; // Pitch
+      rot.x = Math.max(-Math.PI/2, Math.min(Math.PI/2, rot.x)); // limitar inclinación
+      this.lastX = e.clientX; this.lastY = e.clientY;
+    };
+    this._onUp = ()=> { this.dragging = false; };
+    this._onDbl = ()=> {
+      // Reset
+      this.el.object3D.scale.copy(this.startScale);
+      this.el.object3D.rotation.copy(this.startRot);
+    };
+
+    c.addEventListener('pointerdown', this._onDown, {passive:false});
+    window.addEventListener('pointermove', this._onMove, {passive:false});
+    window.addEventListener('pointerup',   this._onUp,   {passive:false});
+    c.addEventListener('dblclick', this._onDbl);
+
+    // Pinch zoom
+    let pinchStart = 0, baseScale = null;
+    const dist = (t0, t1)=> Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+
+    c.addEventListener('touchstart', (e)=>{
+      if (e.touches.length === 2){
+        pinchStart = dist(e.touches[0], e.touches[1]);
+        baseScale = this.el.object3D.scale.clone();
+      }
+    }, {passive:false});
+
+    c.addEventListener('touchmove', (e)=>{
+      if (e.touches.length === 2 && pinchStart > 0){
+        e.preventDefault();
+        const factor = dist(e.touches[0], e.touches[1]) / pinchStart;
+        const s = Math.max(this.data.scaleMin, Math.min(this.data.scaleMax, baseScale.x * factor));
+        this.el.object3D.scale.set(s, s, s);
+      }
+    }, {passive:false});
+
+    c.addEventListener('touchend', ()=>{ pinchStart = 0; }, {passive:true});
+  },
+  remove: function(){
+    const c = this.canvas; if(!c) return;
+    c.removeEventListener('pointerdown', this._onDown);
+    window.removeEventListener('pointermove', this._onMove);
+    window.removeEventListener('pointerup', this._onUp);
+    c.removeEventListener('dblclick', this._onDbl);
   }
-  video.srcObject = null;
-}
-
-async function goFullscreenIfPossible() {
-  // Algunos navegadores requieren gesto; mostramos botón si falla
-  try {
-    if (!document.fullscreenElement) {
-      await document.documentElement.requestFullscreen?.();
-    }
-  } catch (e) {
-    fsBtn.hidden = false; // mostrará botón para pedir fullscreen manualmente
-  }
-}
-
-// Devuelve dispositivos videoinput
-async function getVideoInputs() {
-  const all = await navigator.mediaDevices.enumerateDevices();
-  return all.filter(d => d.kind === 'videoinput');
-}
-
-// Intenta abrir cámara con constraints dados
-async function startWith(constraints, tag='') {
-  try {
-    log(`getUserMedia ${tag}…`);
-    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-    stopStream();
-    currentStream = stream;
-    video.srcObject = stream;
-    await video.play();
-
-    const track = stream.getVideoTracks()[0];
-    const settings = track.getSettings();
-    currentDeviceId = settings.deviceId || currentDeviceId;
-
-    // Torch disponible?
-    const caps = track.getCapabilities?.() || {};
-    const canTorch = 'torch' in caps;
-    torchBtn.hidden = !canTorch;
-    torchOn = false;
-    if (canTorch) torchBtn.textContent = '🔦';
-
-    // Actualiza lista de cámaras (para switch)
-    videoInputs = await getVideoInputs();
-    switchBtn.hidden = videoInputs.length <= 1;
-
-    log({ ok: true, tag, label: track.label, settings, canTorch });
-    return true;
-  } catch (e) {
-    log(`Fallo (${tag}): ${e.name} - ${e.message}`);
-    return false;
-  }
-}
-
-// Preferir cámara trasera en móvil, con fallbacks
-async function startAutoRear() {
-  // 1) Intento directo con facingMode environment (el estándar)
-  if (await startWith({ video: { facingMode: { exact: 'environment' } } }, 'env-exact')) return true;
-  if (await startWith({ video: { facingMode: 'environment' } }, 'env-ideal')) return true;
-
-  // 2) Pedir permiso mínimo para poder leer labels y elegir trasera por nombre
-  // (algunos navegadores ocultan labels hasta que se obtiene un stream)
-  if (!currentStream) {
-    if (!(await startWith({ video: true }, 'default-temp'))) {
-      // 3) Si ni default permite, ya no hay nada que hacer
-      return false;
-    }
-  }
-
-  // Ya tengo permisos: obtengo las cámaras con labels visibles
-  videoInputs = await getVideoInputs();
-
-  // Busco una que suene a trasera
-  const candidates = videoInputs.filter(d =>
-    /back|rear|environment|trase|atrás|trasera/i.test(d.label)
-  );
-
-  const pick = (candidates[0] || videoInputs.find(d => d.deviceId !== currentDeviceId) || videoInputs[0]);
-  if (!pick) return true; // ya tenemos stream al menos
-
-  // Cambiar a esa cámara explícitamente
-  if (await startWith({ video: { deviceId: { exact: pick.deviceId } } }, 'deviceId-rear')) {
-    return true;
-  }
-
-  return true; // al menos quedó la default
-}
-
-// Cambiar a la siguiente cámara
-async function switchCamera() {
-  if (!videoInputs.length) videoInputs = await getVideoInputs();
-  if (!videoInputs.length) return;
-
-  const idx = Math.max(0, videoInputs.findIndex(d => d.deviceId === currentDeviceId));
-  const next = videoInputs[(idx + 1) % videoInputs.length];
-  await startWith({ video: { deviceId: { exact: next.deviceId } } }, 'switch');
-}
-
-// Torch (si soporta)
-async function toggleTorch() {
-  if (!currentStream) return;
-  const track = currentStream.getVideoTracks()[0];
-  const caps = track.getCapabilities?.() || {};
-  if (!('torch' in caps)) return;
-
-  torchOn = !torchOn;
-  try {
-    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
-    torchBtn.textContent = torchOn ? '🔦 ON' : '🔦';
-  } catch (e) {
-    log('No se pudo activar torch: ' + e.message);
-  }
-}
-
-// Eventos
-switchBtn.addEventListener('click', switchCamera);
-torchBtn.addEventListener('click', toggleTorch);
-fsBtn.addEventListener('click', async () => {
-  try {
-    await document.documentElement.requestFullscreen?.();
-    fsBtn.hidden = true;
-  } catch {}
 });
 
-// Arranque
-(async function init() {
-  if (!navigator.mediaDevices?.getUserMedia) {
-    log('Este navegador no soporta getUserMedia.');
-    return;
-  }
+// --- Banner + rótulo "MÉXICO" (targetFound / targetLost) ---
+window.addEventListener('load', () => {
+  const status = document.getElementById('status');
+  const anchor = document.getElementById('anchor');
+  const label  = document.getElementById('labelGroup');
 
-  // Intenta fullscreen (si falla, aparece el botón)
-  await goFullscreenIfPossible();
+  if (status) status.style.display = 'block';
+  if (!anchor) return;
 
-  // Arranca tratando de usar la trasera
-  const ok = await startAutoRear();
-  if (!ok) {
-    log('No se pudo iniciar cámara.\n• Asegura HTTPS/localhost\n• Da permisos\n• Cierra apps que usen la cámara (Zoom/WhatsApp/Teams).');
-  }
+  // Helper: animar escala (pop in/out)
+  const animateScale = (el, to, dur=300) => {
+    if (!el) return;
+    el.setAttribute('animation__scale', {
+      property: 'scale',
+      to: `${to} ${to} ${to}`,
+      dur: dur,
+      easing: 'easeOutCubic'
+    });
+  };
 
-  // Ajuste de orientación (best-effort)
-  try { await screen.orientation?.lock?.('portrait'); } catch {}
-})();
+  anchor.addEventListener('targetFound', () => {
+    if (status) status.style.display = 'none';
+    if (label) {
+      label.setAttribute('visible', 'true');
+      animateScale(label, 1, 280);
+    }
+  });
+
+  anchor.addEventListener('targetLost', () => {
+    if (status) {
+      status.style.display = 'block';
+      status.textContent = 'No veo el marcador. Vuelve a apuntar.';
+    }
+    if (label) {
+      animateScale(label, 0, 220);
+      setTimeout(() => label.setAttribute('visible', 'false'), 230);
+    }
+  });
+});
