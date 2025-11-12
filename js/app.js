@@ -3,37 +3,37 @@ const status = document.getElementById('status');
 const root   = document.getElementById('anchors-root');
 
 /* ===== Defaults globales (tamaño/posición/rotación) ===== */
-const DEFAULT_MODEL_SCALE = 0.16; // tamaño general (chico)
-const DEFAULT_MODEL_POSX  = 0.53; // 👉 todos a la derecha
-const DEFAULT_MODEL_POSY  = 0.04; // un poco abajo
-const DEFAULT_MODEL_POSZ  = 0.06; // 👉 todos al frente (antes era 0.02)
+const DEFAULT_MODEL_SCALE = 0.10; // tamaño general (chico)
+const DEFAULT_MODEL_POSX  = 0.73; // 👉 todos a la derecha
+const DEFAULT_MODEL_POSY  = 0.01; // un poco abajo
+const DEFAULT_MODEL_POSZ  = 0.16; // 👉 todos al frente (antes era 0.02)
 const DEFAULT_MODEL_ROTY  = 0;
 
 /* ===== Mapeo por país =====
    Si algún país sigue grande/alto, ajusta su tx puntual (scale/posX/posY/posZ/rotY). */
 const MAP = [
-  { imgId:'flag0',  label:'ARABIA SAUDITA',  modelId:'mdlArabia',   tx:{ scale:0.07, posX:0.60, posY:0.03, posZ:0.07, rotY:0 } },
-  { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',   tx:{ scale:0.12,               posY:0.04,               rotY:10 } },
-  { imgId:'flag2',  label:'ARGENTINA',       modelId:'mdlArgentina',tx:{ scale:0.12,               posY:0.04,               rotY:-10 } },
-  { imgId:'flag3',  label:'AUSTRALIA',       modelId:'mdlBalon',    tx:{ scale:0.12 } },
-  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.12 } },
-  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.11 } },
-  { imgId:'flag6',  label:'CANADÁ',          modelId:'mdlCanada',   tx:{ scale:0.13,               posY:0.05,               rotY:12 } },
-  { imgId:'flag7',  label:'CATAR',           modelId:'mdlDonut',    tx:{ scale:0.12 } },
-  { imgId:'flag8',  label:'COLOMBIA',        modelId:'mdlCoffee',   tx:{ scale:0.12 } },
-  { imgId:'flag9',  label:'COREA DEL SUR',   modelId:'mdlCorea',    tx:{ scale:0.13,               posY:0.05 } },
-  { imgId:'flag10', label:'COSTA DE MARFIL', modelId:'mdlBalon',    tx:{ scale:0.12 } },
-  { imgId:'flag11', label:'ECUADOR',         modelId:'mdlCopa',     tx:{ scale:0.12 } },
-  { imgId:'flag12', label:'ESTADOS UNIDOS',  modelId:'mdlCheese',   tx:{ scale:0.13,               posY:0.05 } },
-  { imgId:'flag13', label:'INGLATERRA',      modelId:'mdlCoffee',   tx:{ scale:0.12 } },
-  { imgId:'flag14', label:'IRÁN',            modelId:'mdlDonut',    tx:{ scale:0.12 } },
-  { imgId:'flag15', label:'JAPÓN',           modelId:'mdlJapon',    tx:{ scale:0.12 } },
-  { imgId:'flag16', label:'JORDANIA',        modelId:'mdlCheese',   tx:{ scale:0.12 } },
+  { imgId:'flag0',  label:'ARABIA SAUDITA',  modelId:'mdlArabia',   tx:{ scale:0.02, posX:0.60, posY:0.03, posZ:0.07, rotY:0 } },
+  { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',   tx:{ scale:0.36,               posY:0.04,               rotY:10 } },
+  { imgId:'flag2',  label:'ARGENTINA',       modelId:'mdlArgentina',tx:{ scale:0.22,               posY:0.04,               rotY:-10 } },
+  { imgId:'flag3',  label:'AUSTRALIA',       modelId:'mdlBalon',    tx:{ scale:0.22 } },
+  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.22 } },
+  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.21 } },
+  { imgId:'flag6',  label:'CANADÁ',          modelId:'mdlCanada',   tx:{ scale:0.23,               posY:0.05,               rotY:12 } },
+  { imgId:'flag7',  label:'CATAR',           modelId:'mdlDonut',    tx:{ scale:0.22 } },
+  { imgId:'flag8',  label:'COLOMBIA',        modelId:'mdlCoffee',   tx:{ scale:0.22 } },
+  { imgId:'flag9',  label:'COREA DEL SUR',   modelId:'mdlCorea',    tx:{ scale:0.23,               posY:0.05 } },
+  { imgId:'flag10', label:'COSTA DE MARFIL', modelId:'mdlBalon',    tx:{ scale:0.22 } },
+  { imgId:'flag11', label:'ECUADOR',         modelId:'mdlCopa',     tx:{ scale:0.22 } },
+  { imgId:'flag12', label:'ESTADOS UNIDOS',  modelId:'mdlCheese',   tx:{ scale:0.23,               posY:0.05 } },
+  { imgId:'flag13', label:'INGLATERRA',      modelId:'mdlCoffee',   tx:{ scale:0.22 } },
+  { imgId:'flag14', label:'IRÁN',            modelId:'mdlDonut',    tx:{ scale:0.22 } },
+  { imgId:'flag15', label:'JAPÓN',           modelId:'mdlJapon',    tx:{ scale:0.22 } },
+  { imgId:'flag16', label:'JORDANIA',        modelId:'mdlCheese',   tx:{ scale:0.22 } },
   { imgId:'flag17', label:'MÉXICO',          modelId:'mdlMexico',   tx:{ scale:0.09, posX:0.60, posY:0.04, posZ:0.07, rotY:18 } },
-  { imgId:'flag18', label:'PARAGUAY',        modelId:'mdlBalon',    tx:{ scale:0.12 } },
-  { imgId:'flag19', label:'SENEGAL',         modelId:'mdlBote',     tx:{ scale:0.11 } },
-  { imgId:'flag20', label:'SUDÁFRICA',       modelId:'mdlBalon',    tx:{ scale:0.12 } },
-  { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',     tx:{ scale:0.12 } }
+  { imgId:'flag18', label:'PARAGUAY',        modelId:'mdlBalon',    tx:{ scale:0.22 } },
+  { imgId:'flag19', label:'SENEGAL',         modelId:'mdlBote',     tx:{ scale:0.21 } },
+  { imgId:'flag20', label:'SUDÁFRICA',       modelId:'mdlBalon',    tx:{ scale:0.22 } },
+  { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',     tx:{ scale:0.22 } }
 ];
 
 /* ===== Helpers ===== */
