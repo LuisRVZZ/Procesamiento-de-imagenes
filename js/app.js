@@ -1,7 +1,8 @@
-const scene  = document.getElementById('scene');
-const status = document.getElementById('status');
-const root   = document.getElementById('anchors-root');
-const btnAnim = document.getElementById('btnAnim'); // si tienes el botón en el HTML
+const scene   = document.getElementById('scene');
+const status  = document.getElementById('status');
+const root    = document.getElementById('anchors-root');
+const btnAnim = document.getElementById('btnAnim');
+const toolbar = document.getElementById('toolbar'); // opcional mostrar/ocultar
 
 /* ===== Defaults globales ===== */
 const DEFAULT_MODEL_SCALE = 0.10;
@@ -10,7 +11,7 @@ const DEFAULT_MODEL_POSY  = 0.01; // altura base
 const DEFAULT_MODEL_POSZ  = 0.16; // al frente
 const DEFAULT_MODEL_ROTY  = 0;
 
-/* ===== Mapeo por país (usa tus mismos IDs) ===== */
+/* ===== Mapeo por país ===== */
 const MAP = [
   { imgId:'flag0',  label:'ARABIA SAUDITA',  modelId:'mdlArabia',    tx:{ scale:0.02, posX:0.60, posY:0.03, posZ:0.07, rotY:0 } },
   { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',    tx:{ scale:0.15,               posY:0.04,               rotY:10 } },
@@ -36,6 +37,11 @@ const MAP = [
   { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',      tx:{ scale:0.57 } }
 ];
 
+/* ===== Listas para pausar/reanudar ===== */
+const modelsList = []; // a-entity (modelos)
+const flagsList  = []; // a-image (banderas)
+let animationsPlaying = true;
+
 /* ===== Helpers ===== */
 const pop = (el, to, dur = 240) =>
   el?.setAttribute('animation__scale', { property:'scale', to:`${to} ${to} ${to}`, dur, easing:'easeOutCubic' });
@@ -49,69 +55,56 @@ function addImage(anchor, imgId) {
   img.setAttribute('width', '1');
   img.setAttribute('height', '0.6');
   img.setAttribute('material', 'side: double');
-  img.setAttribute('animation',
-    'property: position; to: 0 0.06 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate');
+  // 🔁 Nombrada como animation__flag para poder pausar/reanudar
+  img.setAttribute(
+    'animation__flag',
+    'property: position; to: 0 0.06 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate'
+  );
   anchor.appendChild(img);
+  flagsList.push(img);
 }
 
-/* ===== Animaciones por tipo de modelo =====
-   Cada preset usa nombres de animación distintos (animation__xxx) para no chocar. */
+/* ===== Animaciones por tipo de modelo ===== */
 function applyPresetAnimations(modelId, el, posX, posY, posZ, scale) {
-  // utilidades
-  const bob = 0.08;            // amplitud vertical
+  const bob = 0.08;
   const slow = 1600, fast = 700;
 
   if (modelId === 'mdlBalon') {
-    // Balón: BOTE (arriba/abajo) + giro leve
     el.setAttribute('animation__bounce',
       `property: position; to: ${posX} ${posY + 0.12} ${posZ}; dur:${fast}; easing:easeInOutCubic; loop:true; dir:alternate`);
     el.setAttribute('animation__spin',
       'property: rotation; to: 0 360 0; dur:4000; easing:linear; loop:true');
   }
   else if (modelId === 'mdlCopa') {
-    // Trofeo: giro lento + levitación sutil
     el.setAttribute('animation__float',
       `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
     el.setAttribute('animation__spin',
       'property: rotation; to: 0 360 0; dur:8000; easing:linear; loop:true');
   }
   else if (modelId === 'mdlBote') {
-    // Bote: mecerse (rot Z) + subir/bajar lento
     el.setAttribute('animation__sway',
       'property: rotation; to: 0 0 8; dur:1800; easing:easeInOutSine; loop:true; dir:alternate');
     el.setAttribute('animation__float',
       `property: position; to: ${posX} ${posY + bob} ${posZ}; dur:1800; easing:easeInOutSine; loop:true; dir:alternate`);
   }
   else if (modelId === 'mdlDonut') {
-    // Donut: giro medio + bob corto
     el.setAttribute('animation__spin',
       'property: rotation; to: 0 360 0; dur:5000; easing:linear; loop:true');
     el.setAttribute('animation__bob',
       `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
   }
   else if (modelId === 'mdlCoffee') {
-    // Café: “temblor” leve (rot X/Z) + bob pequeño
     el.setAttribute('animation__wobble',
       'property: rotation; to: 4 0 -4; dur:1200; easing:easeInOutSine; loop:true; dir:alternate');
     el.setAttribute('animation__bob',
       `property: position; to: ${posX} ${posY + bob/3} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
   }
-  else if (modelId === 'mdlCheese') {
-    // Burger: “latido” (scale) + bob leve
-    const s2 = (scale * 1.08).toFixed(4);
-    el.setAttribute('animation__pulse',
-      `property: scale; to: ${s2} ${s2} ${s2}; dur:900; easing:easeInOutSine; loop:true; dir:alternate`);
-    el.setAttribute('animation__bob',
-      `property: position; to: ${posX} ${posY + bob/3} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
-  }
   else if (/^mdl(Arabia|Argentina|USA|Canada|Corea|Japon|Mexico)$/.test(modelId)) {
-    // Modelos de país: hover + balanceo Y suave (no 360)
     el.setAttribute('animation__hover',
       `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
     el.setAttribute('animation__tilt',
       'property: rotation; to: 0 15 0; dur:1800; easing:easeInOutSine; loop:true; dir:alternate');
   } else {
-    // Genérico: bob + giro lento
     el.setAttribute('animation__bob',
       `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
     el.setAttribute('animation__spin',
@@ -119,10 +112,7 @@ function applyPresetAnimations(modelId, el, posX, posY, posZ, scale) {
   }
 }
 
-/* ===== Gestor de modelos para Play/Pause ===== */
-const modelsList = [];
-let animationsPlaying = true;
-
+/* ===== Modelos + control Play/Pause ===== */
 function addModel(anchor, modelId, tx = {}) {
   const asset = document.getElementById(modelId);
   if (!asset) { console.warn(`⚠️ Falta <a-asset-item id="${modelId}">`); return; }
@@ -140,10 +130,10 @@ function addModel(anchor, modelId, tx = {}) {
   el.setAttribute('rotation', `0 ${rotY} 0`);
   el.setAttribute('scale', `${scale} ${scale} ${scale}`);
 
-  // Si el GLB trae clips, arrancan (pausables luego)
+  // Clips internos del GLB (si existen)
   el.setAttribute('animation-mixer', 'timeScale: 1');
 
-  // Aplica animación según el modelo
+  // Preset de animaciones
   applyPresetAnimations(modelId, el, posX, posY, posZ, scale);
 
   anchor.appendChild(el);
@@ -152,28 +142,37 @@ function addModel(anchor, modelId, tx = {}) {
 
 function setAnimationsPlaying(playing) {
   animationsPlaying = playing;
+
+  // Modelos: pausar / reanudar animation__* y animation-mixer
   modelsList.forEach(m => {
-    // pausar/reanudar todas las animation__*
     Object.keys(m.components).forEach(k => {
       if (k.startsWith('animation__')) {
         playing ? m.components[k].play() : m.components[k].pause();
       }
     });
-    // y los clips internos del GLB (si existen)
     if (m.components['animation-mixer']) {
       m.setAttribute('animation-mixer', `timeScale: ${playing ? 1 : 0}`);
     }
   });
+
+  // Banderas: pausar / reanudar animation__flag
+  flagsList.forEach(img => {
+    const comp = img.components['animation__flag'];
+    if (comp) playing ? comp.play() : comp.pause();
+  });
+
   if (btnAnim) btnAnim.textContent = playing ? '⏸️ Pausar animación' : '▶️ Reanudar animación';
 }
 
-/* ===== Scene build ===== */
+/* ===== Construcción de anchors ===== */
 function buildAnchors() {
+  if (toolbar) toolbar.style.display = 'none'; // oculto hasta ver un target
+
   MAP.forEach((cfg, i) => {
     const anchor = document.createElement('a-entity');
     anchor.setAttribute('mindar-image-target', `targetIndex: ${i}`);
 
-    if (cfg.imgId) addImage(anchor, cfg.imgId);
+    if (cfg.imgId)   addImage(anchor, cfg.imgId);
     if (cfg.modelId) addModel(anchor, cfg.modelId, cfg.tx || {});
 
     // etiqueta
@@ -196,15 +195,18 @@ function buildAnchors() {
 
     anchor.appendChild(label);
 
+    // eventos
     anchor.addEventListener('targetFound', () => {
       console.log(`✅ targetFound index=${i} (${cfg.label}) | modelId=${cfg.modelId}`);
       status.style.display = 'none';
+      if (toolbar) toolbar.style.display = 'flex';
       label.setAttribute('visible', 'true');
       pop(label, 1, 220);
     });
     anchor.addEventListener('targetLost', () => {
       status.style.display = 'block';
       status.textContent = 'No veo el marcador. Vuelve a apuntar.';
+      if (toolbar) toolbar.style.display = 'none';
       pop(label, 0, 180);
       setTimeout(() => label.setAttribute('visible', 'false'), 190);
     });
@@ -223,10 +225,10 @@ scene.addEventListener('arError', () => {
 window.addEventListener('load', () => {
   status.style.display = 'block';
   buildAnchors();
-  setAnimationsPlaying(true);
+  setAnimationsPlaying(true); // cambia a false si quieres iniciar pausado
 });
 
-/* ===== Botón Play/Pause (si existe en tu HTML) ===== */
+/* ===== Botón Play/Pause ===== */
 if (btnAnim) {
   btnAnim.addEventListener('click', () => setAnimationsPlaying(!animationsPlaying));
 }

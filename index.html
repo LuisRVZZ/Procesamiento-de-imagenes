@@ -9,10 +9,18 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <link rel="stylesheet" href="./css/Ar.css" />
+
 </head>
 <body>
+  <!-- Estado del sistema -->
   <div id="status" class="banner">Cargando…</div>
 
+  <!-- Botón de control de animación -->
+  <div id="toolbar">
+    <button id="btnAnim">⏸️ Pausar animación</button>
+  </div>
+
+  <!-- Escena principal -->
   <a-scene
     id="scene"
     mindar-image="imageTargetSrc: ./assets/targets/todosBanderas.mind?v=1"
@@ -25,7 +33,7 @@
 
     <!-- Precarga de imágenes + modelos -->
     <a-assets>
-      <!-- Banderas (flag0..flag21) -->
+      <!-- Banderas -->
       <img id="flag0"  src="./assets/targets/arabia-saudita.jpg" />
       <img id="flag1"  src="./assets/targets/Argelia.png" />
       <img id="flag2"  src="./assets/targets/argentina.jpg" />
@@ -49,7 +57,7 @@
       <img id="flag20" src="./assets/targets/sudafrica.png" />
       <img id="flag21" src="./assets/targets/Uruguay.png" />
 
-      <!-- Modelos 3D (ejemplos: agrega los que quieras) -->
+      <!-- Modelos 3D -->
       <a-asset-item id="mdlArabia"   src="./assets/models/Arabia Saudita.glb"></a-asset-item>
       <a-asset-item id="mdlArgentina" src="./assets/models/argentina.glb"></a-asset-item>
       <a-asset-item id="mdlBalon"     src="./assets/models/balon.glb"></a-asset-item>
@@ -72,7 +80,7 @@
     <!-- Cámara -->
     <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-    <!-- Aquí inyecta el JS todos los anchors -->
+    <!-- Contenedor de anclas -->
     <a-entity id="anchors-root"></a-entity>
   </a-scene>
 
