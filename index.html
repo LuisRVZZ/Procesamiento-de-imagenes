@@ -18,6 +18,7 @@
   <div id="toolbar">
     <button id="btnAnim">⏸️ Pausar animación</button>
     <button id="btnTrivia" style="display:none">❓ Trivia</button>
+    <button id="btnVideo"  style="display:none">🎬 Video</button>
   </div>
 
   <!-- Escena principal -->
@@ -102,6 +103,29 @@
           <button id="triviaFinish" class="hidden">Finalizar</button>
         </div>
         <div id="triviaResult" class="result hidden"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Video (YouTube) -->
+  <div id="videoModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close="true"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="videoTitle">
+      <div class="modal-header">
+        <h3 id="videoTitle">Video del país</h3>
+        <button class="close" id="videoClose" aria-label="Cerrar">✖</button>
+      </div>
+      <div class="modal-body">
+        <div id="videoCountry" class="country"></div>
+        <div class="video-wrap">
+          <iframe id="ytFrame"
+                  class="yt"
+                  title="YouTube video player"
+                  frameborder="0"
+                  allow="autoplay; encrypted-media; picture-in-picture; web-share"
+                  allowfullscreen
+                  style="width:100%; height:100%; border-radius:10px;"></iframe>
+        </div>
       </div>
     </div>
   </div>
