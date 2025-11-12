@@ -126,6 +126,30 @@
                   allowfullscreen
                   style="width:100%; height:100%; border-radius:10px;"></iframe>
         </div>
+
+        <!-- ===== Controles de filtro (rápido y simple) ===== -->
+        <div class="video-tools">
+          <label>
+            Filtro:
+            <select id="videoFilter">
+              <option value="none">Sin filtro</option>
+              <option value="grayscale">Blanco y negro</option>
+              <option value="sepia">Sepia</option>
+              <option value="saturate">Saturación</option>
+              <option value="hue">Tono (Hue)</option>
+              <option value="contrast">Contraste</option>
+              <option value="brightness">Brillo</option>
+              <option value="blur">Desenfoque</option>
+              <option value="invert">Invertir</option>
+            </select>
+          </label>
+
+          <label id="videoFilterAmountWrap" style="display:none">
+            Intensidad:
+            <input id="videoFilterAmount" type="range" min="0" max="200" value="100" />
+          </label>
+        </div>
+        <!-- ================================================ -->
       </div>
     </div>
   </div>

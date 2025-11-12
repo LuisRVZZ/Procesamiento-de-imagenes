@@ -22,6 +22,11 @@ const videoClose   = document.getElementById('videoClose');
 const videoCountry = document.getElementById('videoCountry');
 const ytFrame      = document.getElementById('ytFrame');
 
+/* === Filtros de video (select + slider) === */
+const videoFilter           = document.getElementById('videoFilter');
+const videoFilterAmount     = document.getElementById('videoFilterAmount');
+const videoFilterAmountWrap = document.getElementById('videoFilterAmountWrap');
+
 let currentTargetIndex = null;
 let currentCountryLabel = null;
 
@@ -85,24 +90,29 @@ const QUESTION_BANK = {
 };
 
 /* ===== YouTube por país (IDs) ===== */
-/* ===== YouTube por país (IDs) ===== */
 const YT_BANK = {
-  'MÉXICO': 'OcEse_9US8c',          // VisitMexico promo :contentReference[oaicite:0]{index=0}
-  'ARGENTINA': '-CSzznX8dh4',       // Visit Argentina (oficial) :contentReference[oaicite:1]{index=1}
-  'ESTADOS UNIDOS': 'KafRmuuw6NE',  // Explore the United States (VisitTheUSA) :contentReference[oaicite:2]{index=2}
-  'JAPÓN': 'WLIv7HnZ_fE',           // JNTO “Where tradition meets the future” :contentReference[oaicite:3]{index=3}
-  'INGLATERRA': 'ezrfJus7f3g',      // VisitBritain “Starring GREAT Britain” :contentReference[oaicite:4]{index=4}
-  'CANADÁ': 'wlisSjsxXcQ',          // Explore Canada campaign :contentReference[oaicite:5]{index=5}
-  'COREA DEL SUR': 'zn5BlL-nN7M',   // Korea Tourism TVC (KTO) :contentReference[oaicite:6]{index=6}
-  'URUGUAY': 'quOuefqGn8g',         // “Visit Uruguay” travel promo :contentReference[oaicite:7]{index=7}
-  'SUDÁFRICA': 'f-wndBMavuI',       // South African Tourism “South Africa Awaits” :contentReference[oaicite:8]{index=8}
-  'ECUADOR': 'l9Ol9s-lbAY',         // “This is why Ecuador” travel video :contentReference[oaicite:9]{index=9}
-  'CATAR': '4UmO1h8XBhw',           // Visit Qatar campaign spot :contentReference[oaicite:10]{index=10}
-  'ARABIA SAUDITA': 'R6D7jQI4BD0',  // VisitSaudi “This Land Is Calling” :contentReference[oaicite:11]{index=11}
-  'BRASIL': 'OOsL3CUO7-k'           // Embratur/VisitBrasil campaña (USA focus) :contentReference[oaicite:12]{index=12}
-  // Puedes seguir agregando más países cuando quieras
+  'MÉXICO':         '9mHyjCbsSN8',
+  'ARGENTINA':      '1CLWRDi8uvk',
+  'SENEGAL':        '-CitLr3iPvw',
+  'ESTADOS UNIDOS': 'KafRmuuw6NE',
+  'JAPÓN':          'WLIv7HnZ_fE',
+  'INGLATERRA':     'ezrfJus7f3g',
+  'CANADÁ':         'wlisSjsxXcQ',
+  'COREA DEL SUR':  'zn5BlL-nN7M',
+  'BRASIL':         'LWXMhpOkDVY',
+  'ARABIA SAUDITA': 'R6D7jQI4BD0',
+  'URUGUAY':        'quOuefqGn8g',
+  'CATAR':          '4UmO1h8XBhw',
+  'COLOMBIA':       'Kv98nRiRF74',
+  'PARAGUAY':       '_GmQAkm4QP8',
+  'IRÁN':           'HcmNJw9jbac',
+  'COSTA DE MARFIL':'ZjGlnHnRBzw',
+  'CABO VERDE':     'FnFBvLZTjFI',
+  'JORDANIA':       'cq0Xryk2Qw4',
+  'AUSTRALIA':      'iU7BITyUsv0',
+  'ECUADOR':        'rIxZOPuHodM',
+  'ARGELIA':        'ID_ARGELIA'
 };
-
 
 /* ===== Listas para pausar/reanudar ===== */
 const modelsList = [];
@@ -328,10 +338,54 @@ function gradeCurrent() {
   if (trivia.selected === item.answer) trivia.score += 1;
 }
 
+/* ===== FILTROS DE VIDEO (CSS filter) ===== */
+function buildCssFilter(type, amount) {
+  // amount: 0–200 (100 neutro), salvo 'hue' (0–360) y 'blur' (0–10px)
+  switch (type) {
+    case 'none':       return 'none';
+    case 'grayscale':  return `grayscale(${amount/100})`;
+    case 'sepia':      return `sepia(${amount/100})`;
+    case 'saturate':   return `saturate(${amount}%)`;
+    case 'contrast':   return `contrast(${amount}%)`;
+    case 'brightness': return `brightness(${amount}%)`;
+    case 'invert':     return `invert(${amount/100})`;
+    case 'hue':        return `hue-rotate(${amount}deg)`;
+    case 'blur':       return `blur(${(amount/200)*10}px)`;
+    default:           return 'none';
+  }
+}
+function applyCurrentFilter() {
+  if (!ytFrame) return;
+  const type = videoFilter?.value || 'none';
+
+  // Ajustar tope del slider por tipo
+  if (type === 'hue') videoFilterAmount.max = 360;
+  else                videoFilterAmount.max = 200;
+
+  const amount = parseInt(videoFilterAmount?.value ?? '100', 10);
+  const css = buildCssFilter(type, amount);
+
+  ytFrame.style.filter = css;
+  ytFrame.style.webkitFilter = css;
+}
+function resetVideoFilter() {
+  if (!ytFrame) return;
+  ytFrame.style.filter = 'none';
+  ytFrame.style.webkitFilter = 'none';
+  if (videoFilter) videoFilter.value = 'none';
+  if (videoFilterAmount) {
+    videoFilterAmount.max = 200;
+    videoFilterAmount.value = 100;
+  }
+  if (videoFilterAmountWrap) videoFilterAmountWrap.style.display = 'none';
+}
+
 /* ===== VIDEO (YouTube) ===== */
 function openYouTubeForCountry(countryLabel) {
   const id = YT_BANK[countryLabel];
   if (!id) { alert('Aún no hay video para este país.'); return; }
+
+  resetVideoFilter(); // limpia filtros al abrir
 
   const params = new URLSearchParams({
     autoplay: '1',
@@ -352,6 +406,7 @@ function closeYouTubeModal() {
   videoModal.classList.add('hidden');
   videoModal.setAttribute('aria-hidden', 'true');
   ytFrame.src = ''; // detiene el video
+  resetVideoFilter();
 }
 
 /* ===== Construcción de anchors ===== */
@@ -411,7 +466,7 @@ function buildAnchors() {
       if (btnTrivia) btnTrivia.style.display = 'none';
       if (btnVideo)  btnVideo.style.display  = 'none';
 
-      // (Opcional) Cerrar modales al perder target:
+      // (Opcional) cerrar modales al perder target
       // closeModal();
       // closeYouTubeModal();
 
@@ -492,4 +547,24 @@ if (videoModal) {
   videoModal.addEventListener('click', (e) => {
     if (e.target.dataset.close === 'true') closeYouTubeModal();
   });
+}
+
+/* ===== Filtros: listeners ===== */
+if (videoFilter) {
+  videoFilter.addEventListener('change', () => {
+    const t = videoFilter.value;
+
+    // Mostrar/ocultar slider por tipo de filtro
+    videoFilterAmountWrap.style.display = (t === 'none') ? 'none' : 'inline-flex';
+
+    // Defaults útiles por filtro
+    if (t === 'hue')        videoFilterAmount.value = 180; // medio tono
+    else if (t === 'blur')  videoFilterAmount.value = 40;  // ~2px
+    else                    videoFilterAmount.value = 100; // neutro
+
+    applyCurrentFilter();
+  });
+}
+if (videoFilterAmount) {
+  videoFilterAmount.addEventListener('input', applyCurrentFilter);
 }

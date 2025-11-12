@@ -110,3 +110,20 @@ a-scene {
   border-radius: 10px;
   overflow: hidden;
 }
+
+
+.video-tools {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.video-tools label {
+  font-size: .95rem;
+  color: #fff; /* ajusta si tu modal no es oscuro */
+}
+.video-tools select,
+.video-tools input[type="range"] {
+  margin-left: 6px;
+}
