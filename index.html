@@ -1,31 +1,108 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#000000" />
-  <title>Cámara Fullscreen</title>
-  <link rel="stylesheet" href="./css/Ar.css" />
-</head>
-<body>
-  <!-- Contenedor a pantalla completa -->
-  <div id="app">
-    <!-- Vista de cámara (cubre toda la pantalla) -->
-    <video id="preview" autoplay playsinline muted></video>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- A-Frame + MindAR A-Frame -->
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+   <style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+  }
+  a-scene {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+  }
+  .paused-banner {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-family: sans-serif;
+    z-index: 2;
+    display: none;
+  }
+</style>
 
-    <!-- Overlay mínimo para entrar a fullscreen si el navegador lo pide -->
-    <button id="fsBtn" class="fs-btn" hidden>Pantalla completa</button>
+  </head>
+  <body>
+    <div class="paused-banner" id="status">Apunta la cámara al marcador…</div>
 
-    <!-- Controles opcionales (se pueden ocultar en prod) -->
-    <div class="hud">
-      <button id="switchBtn" title="Cambiar cámara" hidden>↺</button>
-      <button id="torchBtn" title="Linterna" hidden>🔦</button>
-    </div>
+    <a-scene
+      mindar-image="imageTargetSrc: /assets/targets/flagMexico.mind;"
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled: false"
+      device-orientation-permission-ui="enabled: false"
+      embedded
+    >
+      <!-- Carga de assets -->
+      <a-assets>
+        <!-- Imagen del marcador para dibujar el plano (opcional) -->
+        <img id="marcador" src="./assets/targets/flagMexico.png" />
+        <!-- Tu modelo GLB -->
+        <a-asset-item id="miModelo" src="./assets/models/Mexico.glb"></a-asset-item>
+      </a-assets>
 
-    <!-- Log pequeño para depurar (quítalo si no lo quieres) -->
-    <div id="log" class="log"></div>
-  </div>
+      <!-- Cámara -->
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-  <script src="./js/app.js"></script>
-</body>
+      <!-- Contenedor anclado al marcador (targetIndex: 0) -->
+      <a-entity id="anchor" mindar-image-target="targetIndex: 0">
+
+        <!-- Plano de referencia del marcador (opcional, puedes ocultarlo o quitarlo) -->
+        <a-plane
+          src="#marcador"
+          position="0 0 0"
+          height="0.552"
+          width="1"
+          rotation="0 0 0"
+          material="opacity:0.25; transparent:true">
+        </a-plane>
+
+        <!-- Tu modelo 3D -->
+        <a-gltf-model
+          id="modelo"
+          src="#miModelo"
+          position="0 0 0.1"
+          rotation="0 0 0"
+          scale="0.01 0.01 0.01"
+          animation="property: position; to: 0 0.08 0.1; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
+        </a-gltf-model>
+
+      </a-entity>
+    </a-scene>
+
+    <script>
+      // Mensajito de guía y eventos targetFound/targetLost
+      const status = document.getElementById('status');
+      const anchor = document.getElementById('anchor');
+
+      anchor.addEventListener('targetFound', () => {
+        status.style.display = 'none';
+      });
+
+      anchor.addEventListener('targetLost', () => {
+        status.style.display = 'block';
+        status.textContent = 'No veo el marcador. Vuelve a apuntar.';
+      });
+
+      // Mostrar guía al inicio
+      window.addEventListener('load', () => {
+        status.style.display = 'block';
+      });
+    </script>
+  </body>
 </html>
