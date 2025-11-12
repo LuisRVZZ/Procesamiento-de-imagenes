@@ -9,15 +9,15 @@
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <link rel="stylesheet" href="./css/Ar.css" />
-
 </head>
 <body>
   <!-- Estado del sistema -->
   <div id="status" class="banner">Cargando…</div>
 
-  <!-- Botón de control de animación -->
+  <!-- Toolbar -->
   <div id="toolbar">
     <button id="btnAnim">⏸️ Pausar animación</button>
+    <button id="btnTrivia" style="display:none">❓ Trivia</button>
   </div>
 
   <!-- Escena principal -->
@@ -58,7 +58,7 @@
       <img id="flag21" src="./assets/targets/Uruguay.png" />
 
       <!-- Modelos 3D -->
-      <a-asset-item id="mdlArabia"   src="./assets/models/Arabia Saudita.glb"></a-asset-item>
+      <a-asset-item id="mdlArabia"    src="./assets/models/Arabia Saudita.glb"></a-asset-item>
       <a-asset-item id="mdlArgentina" src="./assets/models/argentina.glb"></a-asset-item>
       <a-asset-item id="mdlBalon"     src="./assets/models/balon.glb"></a-asset-item>
       <a-asset-item id="mdlUSA"       src="./assets/models/estadosunidos.glb"></a-asset-item>
@@ -83,6 +83,28 @@
     <!-- Contenedor de anclas -->
     <a-entity id="anchors-root"></a-entity>
   </a-scene>
+
+  <!-- Modal de Trivia -->
+  <div id="triviaModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close="true"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="triviaTitle">
+      <div class="modal-header">
+        <h3 id="triviaTitle">Trivia</h3>
+        <button class="close" id="triviaClose" aria-label="Cerrar">✖</button>
+      </div>
+      <div class="modal-body">
+        <div id="triviaCountry" class="country"></div>
+        <div id="triviaProgress" class="progress"></div>
+        <div id="triviaQuestion" class="question"></div>
+        <ul id="triviaOptions" class="options"></ul>
+        <div class="actions">
+          <button id="triviaNext" disabled>Siguiente</button>
+          <button id="triviaFinish" class="hidden">Finalizar</button>
+        </div>
+        <div id="triviaResult" class="result hidden"></div>
+      </div>
+    </div>
+  </div>
 
   <script src="./js/app.js" defer></script>
 </body>
