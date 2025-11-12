@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AR – 6 Banderas</title>
+  <title>AR – 8 Banderas</title>
 
   <!-- A-Frame y MindAR -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
@@ -23,7 +23,7 @@
 
   <a-scene
     id="scene"
-    mindar-image="imageTargetSrc: /assets/targets/seisbanderas.mind?v=1;"
+    mindar-image="imageTargetSrc: /assets/targets/ochoBanderas.mind?v=1;"
     color-space="sRGB"
     renderer="colorManagement: true, physicallyCorrectLights"
     vr-mode-ui="enabled:false"
@@ -32,13 +32,15 @@
     loading-screen="enabled:true">
 
     <a-assets>
-      <!-- 🔹 Sustituye las rutas por tus banderas -->
-      <img id="flag0" src="/assets/targets/Colombia.png" />
-      <img id="flag1" src="/assets/targets/corea-del-sur.png" />
-      <img id="flag2" src="/assets/targets/costa-de-marfil.png" />
-      <img id="flag3" src="/assets/targets/Ecuador.png" />
-      <img id="flag4" src="/assets/targets/estados-unidos.png" />
-      <img id="flag5" src="/assets/targets/Inglaterra.png" />
+      <!--  Sustituye con tus banderas -->
+      <img id="flag0" src="/assets/targets/Iran.png" />
+      <img id="flag1" src="/assets/targets/japon.png" />
+      <img id="flag2" src="/assets/targets/jordania.png" />
+      <img id="flag3" src="/assets/targets/Mexico.png" />
+      <img id="flag4" src="/assets/targets/Paraguay.png" />
+      <img id="flag5" src="/assets/targets/Senegal.png" />
+      <img id="flag6" src="/assets/targets/sudafrica.png" />
+      <img id="flag7" src="/assets/targets/Uruguay.png" />
     </a-assets>
 
     <!-- Luces -->
@@ -48,30 +50,31 @@
     <!-- Cámara -->
     <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-    <!-- 🔸 6 marcadores (uno por bandera) -->
-    <!-- targetIndex 0 -->
+    <!-- 🔸 8 marcadores (uno por bandera) -->
+    <!-- Usa este patrón para cada targetIndex -->
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-image src="#flag0" position="0 0 0.12" width="1" height="0.6" material="side:double"
+      <a-image src="#flag0" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
                animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
       <a-entity id="label0" position="0 -0.55 0.12" visible="false" scale="0 0 0">
         <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
-        <a-entity text="value: ARGELIA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+        <a-entity text="value: MÉXICO; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
       </a-entity>
     </a-entity>
 
-    <!-- targetIndex 1 -->
     <a-entity mindar-image-target="targetIndex: 1">
-      <a-image src="#flag1" position="0 0 0.12" width="1" height="0.6" material="side:double"
+      <a-image src="#flag1" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
                animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
       <a-entity id="label1" position="0 -0.55 0.12" visible="false" scale="0 0 0">
         <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
-        <a-entity text="value: AUSTRALIA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+        <a-entity text="value: ARGENTINA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
       </a-entity>
     </a-entity>
 
-    <!-- targetIndex 2 -->
     <a-entity mindar-image-target="targetIndex: 2">
-      <a-image src="#flag2" position="0 0 0.12" width="1" height="0.6" material="side:double"
+      <a-image src="#flag2" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
                animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
       <a-entity id="label2" position="0 -0.55 0.12" visible="false" scale="0 0 0">
         <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
@@ -79,33 +82,53 @@
       </a-entity>
     </a-entity>
 
-    <!-- targetIndex 3 -->
     <a-entity mindar-image-target="targetIndex: 3">
-      <a-image src="#flag3" position="0 0 0.12" width="1" height="0.6" material="side:double"
+      <a-image src="#flag3" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
                animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
       <a-entity id="label3" position="0 -0.55 0.12" visible="false" scale="0 0 0">
-        <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
-        <a-entity text="value: EGIPTO; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
-      </a-entity>
-    </a-entity>
-
-    <!-- targetIndex 4 -->
-    <a-entity mindar-image-target="targetIndex: 4">
-      <a-image src="#flag4" position="0 0 0.12" width="1" height="0.6" material="side:double"
-               animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
-      <a-entity id="label4" position="0 -0.55 0.12" visible="false" scale="0 0 0">
         <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
         <a-entity text="value: FRANCIA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
       </a-entity>
     </a-entity>
 
-    <!-- targetIndex 5 -->
+    <a-entity mindar-image-target="targetIndex: 4">
+      <a-image src="#flag4" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
+               animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
+      <a-entity id="label4" position="0 -0.55 0.12" visible="false" scale="0 0 0">
+        <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
+        <a-entity text="value: ESPAÑA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+      </a-entity>
+    </a-entity>
+
     <a-entity mindar-image-target="targetIndex: 5">
-      <a-image src="#flag5" position="0 0 0.12" width="1" height="0.6" material="side:double"
+      <a-image src="#flag5" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
                animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
       <a-entity id="label5" position="0 -0.55 0.12" visible="false" scale="0 0 0">
         <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
-        <a-entity text="value: MÉXICO; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+        <a-entity text="value: ALEMANIA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+      </a-entity>
+    </a-entity>
+
+    <a-entity mindar-image-target="targetIndex: 6">
+      <a-image src="#flag6" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
+               animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
+      <a-entity id="label6" position="0 -0.55 0.12" visible="false" scale="0 0 0">
+        <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
+        <a-entity text="value: JAPÓN; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+      </a-entity>
+    </a-entity>
+
+    <a-entity mindar-image-target="targetIndex: 7">
+      <a-image src="#flag7" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
+               animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate"></a-image>
+      <a-entity id="label7" position="0 -0.55 0.12" visible="false" scale="0 0 0">
+        <a-plane width="0.9" height="0.18" material="color:#111;opacity:0.65;transparent:true;side:double"></a-plane>
+        <a-entity text="value: ESTADOS UNIDOS; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
       </a-entity>
     </a-entity>
 
@@ -119,24 +142,24 @@
       {property:'scale', to:`${to} ${to} ${to}`, dur, easing:'easeOutCubic'});
 
     scene.addEventListener('arReady', ()=>{
-      status.textContent = 'Listo. Apunta a cualquiera de las seis banderas.';
+      status.textContent = 'Listo. Apunta a cualquiera de las 8 banderas.';
     });
 
     scene.addEventListener('arError', ()=>{
-      status.textContent = 'Error de cámara/HTTPS/privacidad.';
+      status.textContent = 'Error de cámara o permisos HTTPS.';
     });
 
-    // Mostrar/ocultar etiquetas dinámicamente
+    // Mostrar y ocultar los rótulos
     document.querySelectorAll('[mindar-image-target]').forEach(anchor=>{
       const label = anchor.querySelector('[id^="label"]');
       anchor.addEventListener('targetFound', ()=>{
         status.style.display = 'none';
-        if (label) { label.setAttribute('visible','true'); pop(label,1,220); }
+        if (label){ label.setAttribute('visible','true'); pop(label,1,220); }
       });
       anchor.addEventListener('targetLost', ()=>{
         status.style.display = 'block';
         status.textContent = 'No veo el marcador. Vuelve a apuntar.';
-        if (label) { pop(label,0,180); setTimeout(()=> label.setAttribute('visible','false'),190); }
+        if (label){ pop(label,0,180); setTimeout(()=>label.setAttribute('visible','false'),190); }
       });
     });
   </script>
