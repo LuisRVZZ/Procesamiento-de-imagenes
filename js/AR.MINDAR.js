@@ -10,20 +10,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const arView = document.querySelector('.ar-view');
 
   let mindarThree = null, renderer = null, scene = null, camera = null;
-  let anchor = null, model = null, running = false, mixer = null;
+  let anchor = null, model = null, mixer = null;
+  let running = false;
 
-  // Usa rutas RELATIVAS para Netlify/GitHub Pages
+  // Para animaciones con Three de forma estable
+  const clock = new THREE.Clock();
+
+  // Mantener handler nombrado para poder removerlo en stop
+  const resizeHandler = () => {
+    if (!renderer) return;
+    const w = arView.clientWidth || 640;
+    const h = arView.clientHeight || 360;
+    renderer.setSize(w, h, false);
+  };
+
+  // Rutas RELATIVAS (Netlify/GitHub Pages)
   const TARGET_MIND = './assets/targets/flagMexico.mind';
   const MODEL_GLTF  = './assets/models/Mexico.glb';
 
   async function pickCameraDeviceId(){
-    // Pre-solicita permiso para poder listar devices con label
-    const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-    tmp.getTracks().forEach(t => t.stop());
-    const devs = await navigator.mediaDevices.enumerateDevices();
-    const cams = devs.filter(d => d.kind === 'videoinput');
-    const back = cams.find(d => /back|rear|environment/i.test(d.label));
-    return (back || cams[0])?.deviceId || null;
+    try{
+      // Pre-solicita permiso para poder ver labels y elegir cámara trasera
+      const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      tmp.getTracks().forEach(t => t.stop());
+      const devs = await navigator.mediaDevices.enumerateDevices();
+      const cams = devs.filter(d => d.kind === 'videoinput');
+      const back = cams.find(d => /back|rear|environment/i.test(d.label));
+      return (back || cams[0])?.deviceId || null;
+    }catch{ 
+      return null; 
+    }
   }
 
   async function initMindAR(deviceId = null) {
@@ -33,25 +49,32 @@ document.addEventListener('DOMContentLoaded', () => {
       container: arView,
       imageTargetSrc: TARGET_MIND,
       uiLoading: 'no', uiScanning: 'yes', uiError: 'yes',
-      // Ayuda en Edge/móvil a elegir la cámara correcta
+      // Ayuda a elegir la cámara trasera en móvil/Edge
       videoConfig: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' }
     });
 
     ({ renderer, scene, camera } = mindarThree);
 
-    // Three r160+: sustituye outputEncoding por outputColorSpace
-    try { renderer.outputColorSpace = THREE.SRGBColorSpace; } catch {}
+    // three r160: color space
+    if (renderer.outputColorSpace !== undefined) {
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+    }
 
+    // Luz básica
     scene.add(new THREE.AmbientLight(0xffffff, 1));
 
+    // Anchor del target #0
     anchor = mindarThree.addAnchor(0);
-    anchor.onTargetFound = () => { 
-      placeholder.style.display = 'none'; 
-      if (mixer) mixer.timeScale = 1; 
+
+    // Si quieres overlay cuando no hay target, vuelve a mostrar el placeholder aquí.
+    // Para evitar "pantalla negra", lo dejamos SIEMPRE oculto tras iniciar.
+    anchor.onTargetFound = () => {
+      if (mixer) mixer.timeScale = 1;
     };
-    anchor.onTargetLost = () => { 
-      placeholder.style.display = 'flex'; 
-      if (mixer) mixer.timeScale = 0; 
+    anchor.onTargetLost = () => {
+      if (mixer) mixer.timeScale = 0;
+      // Si prefieres overlay sin target, descomenta:
+      // placeholder.style.display = 'flex';
     };
   }
 
@@ -62,15 +85,13 @@ document.addEventListener('DOMContentLoaded', () => {
       model = gltf.scene;
       model.scale.set(0.15, 0.15, 0.15);
       model.rotation.y = Math.PI;
+      anchor.group.add(model);
 
       if (gltf.animations?.length) {
         mixer = new THREE.AnimationMixer(model);
         const action = mixer.clipAction(gltf.animations[0]);
         action.play();
-        anchor.onRender = (dt) => mixer?.update(dt);
       }
-
-      anchor.group.add(model);
     }, undefined, (err) => {
       console.error('[AR] Error GLB:', err);
       alert('No se pudo cargar el .glb (ruta/CORS). Revisa la consola.');
@@ -79,22 +100,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function startAR() {
     try {
+      // HTTPS requerido en móvil (excepto localhost)
       if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-        alert('Abre el sitio en HTTPS (Netlify).'); 
+        alert('Abre el sitio en HTTPS (Netlify).');
         return;
       }
 
-      // Muestra la sección AR
+      // Asegura que la sección AR esté visible
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById('ar').classList.add('active');
 
-      // Selecciona dispositivo (mejora compatibilidad Edge/móvil)
-      let deviceId = null;
-      try { deviceId = await pickCameraDeviceId(); } catch {}
-
+      const deviceId = await pickCameraDeviceId().catch(()=>null);
       await initMindAR(deviceId);
 
-      // Inicia cámara y tracking
+      // Inicia cámara/AR
       try { 
         await mindarThree.start(); 
       } catch(e){
@@ -104,30 +123,26 @@ document.addEventListener('DOMContentLoaded', () => {
         return alert('No se pudo iniciar la cámara. Revisa permisos o que no esté en uso por otra app.');
       }
 
-      // Forzar tamaño del renderer tras montar el canvas
-      const resize = ()=>{
-        const w = arView.clientWidth || 640;
-        const h = arView.clientHeight || 360;
-        renderer.setSize(w, h, false);
-      };
-      resize();
-      window.addEventListener('resize', resize);
+      // Oculta overlay apenas arranca (clave para evitar “negro”)
+      placeholder.style.display = 'none';
+
+      // Ajusta tamaño cuando ya está montado
+      resizeHandler();
+      window.addEventListener('resize', resizeHandler);
 
       loadModelOnce();
 
       running = true;
       startBtn.disabled = true;
       stopBtn.disabled = false;
-      placeholder.style.display = 'none';
 
-      let last = performance.now();
-      const loop = (now) => {
+      // Loop oficial: actualiza mixer y renderiza
+      renderer.setAnimationLoop(() => {
         if (!running) return;
-        const dt = (now - last) / 1000; last = now;
+        const dt = clock.getDelta();
+        if (mixer) mixer.update(dt);
         renderer.render(scene, camera);
-        requestAnimationFrame(loop);
-      };
-      requestAnimationFrame(loop);
+      });
 
     } catch (e) {
       console.error('Fallo al iniciar AR:', e);
@@ -137,16 +152,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function stopAR() {
     if (!mindarThree) return;
+
+    // Corta el loop y limpia listeners
+    running = false;
+    renderer?.setAnimationLoop(null);
+    window.removeEventListener('resize', resizeHandler);
+
+    // Detén MindAR y quita canvas
     try { await mindarThree.stop(); } catch {}
     try { mindarThree.renderer.domElement.remove(); } catch {}
 
-    // Limpieza opcional de recursos
+    // Limpieza de recursos Three
     try {
-      scene?.traverse(obj=>{
+      scene?.traverse(obj => {
         if (obj.geometry) obj.geometry.dispose?.();
         if (obj.material) {
-          (Array.isArray(obj.material)?obj.material:[obj.material]).forEach(m=>{
-            m.map?.dispose?.(); m.dispose?.();
+          (Array.isArray(obj.material) ? obj.material : [obj.material]).forEach(m => {
+            m.map?.dispose?.();
+            m.dispose?.();
           });
         }
       });
@@ -154,12 +177,14 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch {}
 
     mindarThree = renderer = scene = camera = anchor = model = mixer = null;
-    running = false;
+
     startBtn.disabled = false;
     stopBtn.disabled = true;
+    // Si quieres volver a mostrar overlay al detener:
     placeholder.style.display = 'flex';
   }
 
+  // Pantalla completa
   fullscreenBtn?.addEventListener('click', () => {
     const fsIn  = arView.requestFullscreen || arView.webkitRequestFullscreen || arView.msRequestFullscreen;
     const fsOut = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;

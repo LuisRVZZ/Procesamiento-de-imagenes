@@ -336,11 +336,14 @@
 .ar-view{
   position: relative;
   width: 100%;
-  aspect-ratio: 16/9;     /* O usa height: 60vh; si prefieres */
+  height: 70vh;          /* <-- robusto en móvil */
+  max-height: 80vh;
+  aspect-ratio: 16/9;    /* fallback si el browser lo respeta */
   background: #000;
   overflow: hidden;
   border-radius: 16px;
 }
+
 
 /* Asegura que MindAR/Three llenen el contenedor */
 .ar-view canvas,
