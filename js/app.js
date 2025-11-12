@@ -2,40 +2,41 @@ const scene  = document.getElementById('scene');
 const status = document.getElementById('status');
 const root   = document.getElementById('anchors-root');
 
-// ===== Defaults globales (tamaño/posición) =====
-const DEFAULT_MODEL_SCALE = 0.14;  // más chico global
-const DEFAULT_MODEL_POSY  = 0.05;  // un poco más abajo
+/* ===== Defaults globales (tamaño/posición/rotación) ===== */
+const DEFAULT_MODEL_SCALE = 0.16; // tamaño general (chico)
+const DEFAULT_MODEL_POSX  = 0.53; // 👉 todos a la derecha
+const DEFAULT_MODEL_POSY  = 0.04; // un poco abajo
+const DEFAULT_MODEL_POSZ  = 0.06; // 👉 todos al frente (antes era 0.02)
 const DEFAULT_MODEL_ROTY  = 0;
-const DEFAULT_MODEL_POSX  = 0.53;  // 👉 todos a la derecha
 
-// ===== Mapeo por país =====
-// Si algún país sigue grande/alto, ajusta su tx puntual (scale/posY/posX/rotY).
+/* ===== Mapeo por país =====
+   Si algún país sigue grande/alto, ajusta su tx puntual (scale/posX/posY/posZ/rotY). */
 const MAP = [
-  { imgId:'flag0',  label:'ARABIA SAUDITA',  modelId:'mdlArabia',   tx:{ scale:0.07, posY:0.03, posX:0.42, rotY:0 } }, // más pequeño y más a la derecha
-  { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',   tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:10 } },
-  { imgId:'flag2',  label:'ARGENTINA',       modelId:'mdlArgentina',tx:{ scale:0.70, posY:0.04, posX:0.35, rotY:-10 } }, // debug abajo
-  { imgId:'flag3',  label:'AUSTRALIA',       modelId:'mdlBalon',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.70, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.70, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag6',  label:'CANADÁ',          modelId:'mdlCanada',   tx:{ scale:0.13, posY:0.05, posX:0.36, rotY:12 } },
-  { imgId:'flag7',  label:'CATAR',           modelId:'mdlDonut',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag8',  label:'COLOMBIA',        modelId:'mdlCoffee',   tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag9',  label:'COREA DEL SUR',   modelId:'mdlCorea',    tx:{ scale:0.13, posY:0.05, posX:0.36, rotY:0 } },
-  { imgId:'flag10', label:'COSTA DE MARFIL', modelId:'mdlBalon',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag11', label:'ECUADOR',         modelId:'mdlCopa',     tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag12', label:'ESTADOS UNIDOS',  modelId:'mdlCheese',   tx:{ scale:0.13, posY:0.05, posX:0.36, rotY:0 } },
-  { imgId:'flag13', label:'INGLATERRA',      modelId:'mdlCoffee',   tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag14', label:'IRÁN',            modelId:'mdlDonut',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag15', label:'JAPÓN',           modelId:'mdlJapon',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag16', label:'JORDANIA',        modelId:'mdlCheese',   tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag17', label:'MÉXICO',          modelId:'mdlMexico',   tx:{ scale:0.10, posY:0.04, posX:0.40, rotY:18 } }, // mucho más chico y a la derecha
-  { imgId:'flag18', label:'PARAGUAY',        modelId:'mdlBalon',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag19', label:'SENEGAL',         modelId:'mdlBote',     tx:{ scale:0.11, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag20', label:'SUDÁFRICA',       modelId:'mdlBalon',    tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } },
-  { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',     tx:{ scale:0.12, posY:0.04, posX:0.35, rotY:0 } }
+  { imgId:'flag0',  label:'ARABIA SAUDITA',  modelId:'mdlArabia',   tx:{ scale:0.07, posX:0.60, posY:0.03, posZ:0.07, rotY:0 } },
+  { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',   tx:{ scale:0.12,               posY:0.04,               rotY:10 } },
+  { imgId:'flag2',  label:'ARGENTINA',       modelId:'mdlArgentina',tx:{ scale:0.12,               posY:0.04,               rotY:-10 } },
+  { imgId:'flag3',  label:'AUSTRALIA',       modelId:'mdlBalon',    tx:{ scale:0.12 } },
+  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.12 } },
+  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.11 } },
+  { imgId:'flag6',  label:'CANADÁ',          modelId:'mdlCanada',   tx:{ scale:0.13,               posY:0.05,               rotY:12 } },
+  { imgId:'flag7',  label:'CATAR',           modelId:'mdlDonut',    tx:{ scale:0.12 } },
+  { imgId:'flag8',  label:'COLOMBIA',        modelId:'mdlCoffee',   tx:{ scale:0.12 } },
+  { imgId:'flag9',  label:'COREA DEL SUR',   modelId:'mdlCorea',    tx:{ scale:0.13,               posY:0.05 } },
+  { imgId:'flag10', label:'COSTA DE MARFIL', modelId:'mdlBalon',    tx:{ scale:0.12 } },
+  { imgId:'flag11', label:'ECUADOR',         modelId:'mdlCopa',     tx:{ scale:0.12 } },
+  { imgId:'flag12', label:'ESTADOS UNIDOS',  modelId:'mdlCheese',   tx:{ scale:0.13,               posY:0.05 } },
+  { imgId:'flag13', label:'INGLATERRA',      modelId:'mdlCoffee',   tx:{ scale:0.12 } },
+  { imgId:'flag14', label:'IRÁN',            modelId:'mdlDonut',    tx:{ scale:0.12 } },
+  { imgId:'flag15', label:'JAPÓN',           modelId:'mdlJapon',    tx:{ scale:0.12 } },
+  { imgId:'flag16', label:'JORDANIA',        modelId:'mdlCheese',   tx:{ scale:0.12 } },
+  { imgId:'flag17', label:'MÉXICO',          modelId:'mdlMexico',   tx:{ scale:0.09, posX:0.60, posY:0.04, posZ:0.07, rotY:18 } },
+  { imgId:'flag18', label:'PARAGUAY',        modelId:'mdlBalon',    tx:{ scale:0.12 } },
+  { imgId:'flag19', label:'SENEGAL',         modelId:'mdlBote',     tx:{ scale:0.11 } },
+  { imgId:'flag20', label:'SUDÁFRICA',       modelId:'mdlBalon',    tx:{ scale:0.12 } },
+  { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',     tx:{ scale:0.12 } }
 ];
 
-// ===== Helpers =====
+/* ===== Helpers ===== */
 const pop = (el, to, dur = 240) =>
   el?.setAttribute('animation__scale', { property:'scale', to:`${to} ${to} ${to}`, dur, easing:'easeOutCubic' });
 
@@ -64,21 +65,22 @@ function addModel(anchor, modelId, tx = {}) {
   const rotY  = tx.rotY  ?? DEFAULT_MODEL_ROTY;
   const posY  = tx.posY  ?? DEFAULT_MODEL_POSY;
   const posX  = tx.posX  ?? DEFAULT_MODEL_POSX;
+  const posZ  = tx.posZ  ?? DEFAULT_MODEL_POSZ;
 
   const model = document.createElement('a-entity');
   model.setAttribute('gltf-model', `#${modelId}`);
-  model.setAttribute('position', `${posX} ${posY} 0.02`);
+  model.setAttribute('position', `${posX} ${posY} ${posZ}`);
   model.setAttribute('rotation', `0 ${rotY} 0`);
   model.setAttribute('scale', `${scale} ${scale} ${scale}`);
 
-  // 🛠 Importante: la animación respeta la X elegida (sin "volver" a 0.25)
+  // Animación que respeta X/Y/Z configurados
   model.setAttribute('animation__float',
-    `property: position; to: ${posX} ${posY + 0.06} 0.02; dur:1200; easing:easeInOutSine; loop:true; dir:alternate`);
+    `property: position; to: ${posX} ${posY + 0.06} ${posZ}; dur:1200; easing:easeInOutSine; loop:true; dir:alternate`);
 
   anchor.appendChild(model);
 }
 
-// ===== Crear anchors dinámicamente =====
+/* ===== Crear anchors dinámicamente ===== */
 function buildAnchors() {
   MAP.forEach((cfg, i) => {
     const anchor = document.createElement('a-entity');
@@ -90,7 +92,7 @@ function buildAnchors() {
     if (cfg.modelId) {
       const exists = !!document.getElementById(cfg.modelId);
       if (!exists) console.warn(`⚠️ modelId "${cfg.modelId}" no existe para ${cfg.label}.`);
-      addModel(anchor, cfg.modelId, cfg.tx);
+      addModel(anchor, cfg.modelId, cfg.tx || {});
     }
 
     // etiqueta
@@ -131,7 +133,7 @@ function buildAnchors() {
   });
 }
 
-// ===== Estado general =====
+/* ===== Estado general ===== */
 scene.addEventListener('arReady', () => {
   status.textContent = 'Listo. Apunta al marcador que quieras.';
 });
