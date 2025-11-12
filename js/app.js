@@ -1,127 +1,118 @@
-// === Configuración: archivo .mind y los 2 targets en el orden del Creator ===
-const MIND_FILE = './assets/targets/dosbanderas.mind';
+const scene  = document.getElementById('scene');
+const status = document.getElementById('status');
+const root   = document.getElementById('anchors-root');
 
-// Orden EXACTO como los subiste (arriba→abajo) en MindAR Creator:
-const TARGETS = [
-  { name: 'Arabia Saudita', asset: '#foto-ArabiaSaudita', aspect: 0.6 }, // targetIndex: 0
-  { name: 'Argelia',        asset: '#foto-Argelia',       aspect: 0.6 }  // targetIndex: 1
+// Etiquetas en el mismo orden que tus <img id="flag0"... "flag22">
+const LABELS = [
+  'ARABIA SAUDITA',   // flag0  -> targetIndex 0
+  'ARGELIA',          // flag1  -> targetIndex 1
+  'ARGENTINA',        // flag2  -> targetIndex 2
+  'AUSTRALIA',        // flag3  -> targetIndex 3
+  'BRASIL',           // flag4  -> targetIndex 4
+  'CABO VERDE',       // flag5  -> targetIndex 5
+  'CANADÁ',           // flag6  -> targetIndex 6
+  'CATAR',            // flag7  -> targetIndex 7
+  'CATAR',            // flag8  -> targetIndex 8 (solo si tu .mind tiene 2 de Catar)
+  'COLOMBIA',         // flag9  -> targetIndex 9
+  'COREA DEL SUR',    // flag10 -> targetIndex 10
+  'COSTA DE MARFIL',  // flag11 -> targetIndex 11
+  'ECUADOR',          // flag12 -> targetIndex 12
+  'ESTADOS UNIDOS',   // flag13 -> targetIndex 13
+  'INGLATERRA',       // flag14 -> targetIndex 14
+  'IRÁN',             // flag15 -> targetIndex 15
+  'JAPÓN',            // flag16 -> targetIndex 16
+  'JORDANIA',         // flag17 -> targetIndex 17
+  'MÉXICO',           // flag18 -> targetIndex 18
+  'PARAGUAY',         // flag19 -> targetIndex 19
+  'SENEGAL',          // flag20 -> targetIndex 20
+  'SUDÁFRICA',        // flag21 -> targetIndex 21
+  'URUGUAY'           // flag22 -> targetIndex 22
 ];
 
-// === Parámetros visuales ===
-const WIDTH = 1.0;      // ancho del a-image
-const LABEL_H = 0.18;   // alto del rótulo
-const DEBUG = true;
+// Animación “pop” para mostrar/ocultar el rótulo
+const pop = (el, to, dur = 240) => el?.setAttribute('animation__scale', {
+  property: 'scale',
+  to: `${to} ${to} ${to}`,
+  dur,
+  easing: 'easeOutCubic'
+});
 
-// === Utilidades ===
-function popScale(el, to, dur = 260) {
-  if (!el) return;
-  el.setAttribute('animation__scale', {
-    property: 'scale',
-    to: `${to} ${to} ${to}`,
-    dur,
-    easing: 'easeOutCubic'
-  });
-}
+// Crea un anchor para cada targetIndex
+function buildAnchors() {
+  for (let i = 0; i < LABELS.length; i++) {
+    const assetId = `flag${i}`;
+    const country = LABELS[i];
 
-function clearChildren(root) {
-  while (root.firstChild) root.removeChild(root.firstChild);
-}
+    const anchor = document.createElement('a-entity');
+    anchor.setAttribute('mindar-image-target', `targetIndex: ${i}`);
 
-// Crea un anchor (a-entity con mindar-image-target) para un targetIndex
-function createAnchor(targetDef, index, statusEl) {
-  const anchor = document.createElement('a-entity');
-  anchor.setAttribute('mindar-image-target', `targetIndex: ${index}`);
+    // Imagen (bandera) con “flotadito”
+    const img = document.createElement('a-image');
+    img.setAttribute('src', `#${assetId}`);
+    img.setAttribute('position', '0 0 0.12'); // separa del plano para evitar z-fighting
+    img.setAttribute('width', '1');
+    img.setAttribute('height', '0.6');
+    img.setAttribute('material', 'side: double');
+    img.setAttribute(
+      'animation',
+      'property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate'
+    );
+    anchor.appendChild(img);
 
-  // Imagen encima del marcador (puedes cambiar a <a-gltf-model> si luego usas GLB)
-  const img = document.createElement('a-image');
-  img.setAttribute('src', targetDef.asset);
-  img.setAttribute('position', '0 0 0.12');
-  img.setAttribute('width', WIDTH);
-  img.setAttribute('height', (WIDTH * (targetDef.aspect || 0.6)).toString());
-  img.setAttribute('material', 'side:double');
-  img.setAttribute(
-    'animation',
-    'property: position; to: 0 0.08 0.12; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate'
-  );
+    // Label
+    const label = document.createElement('a-entity');
+    label.setAttribute('id', `label-${i}`);
+    label.setAttribute('position', '0 -0.55 0.12');
+    label.setAttribute('visible', 'false');
+    label.setAttribute('scale', '0 0 0');
 
-  // Rótulo
-  const labelGrp = document.createElement('a-entity');
-  labelGrp.setAttribute('position', `0 ${-(WIDTH * 0.5 + 0.15)} 0.1`);
-  labelGrp.setAttribute('visible', 'false');
-  labelGrp.setAttribute('scale', '0 0 0');
+    const plate = document.createElement('a-plane');
+    plate.setAttribute('width', '0.9');
+    plate.setAttribute('height', '0.18');
+    plate.setAttribute('material', 'color: #111; opacity: 0.65; transparent: true; side: double');
+    label.appendChild(plate);
 
-  const labelBg = document.createElement('a-plane');
-  labelBg.setAttribute('width', WIDTH * 0.9);
-  labelBg.setAttribute('height', LABEL_H);
-  labelBg.setAttribute('material', 'color:#111; opacity:0.65; transparent:true; side:double');
+    const text = document.createElement('a-entity');
+    text.setAttribute('text', `value: ${country}; align: center; color: #fff; width: 2.4`);
+    text.setAttribute('position', '0 0 0.001');
+    label.appendChild(text);
 
-  const labelText = document.createElement('a-entity');
-  labelText.setAttribute(
-    'text',
-    `value:${targetDef.name.toUpperCase()}; align:center; color:#fff; width:2.5; letterSpacing:1`
-  );
-  labelText.setAttribute('position', '0 0 0.001');
+    anchor.appendChild(label);
 
-  labelGrp.appendChild(labelBg);
-  labelGrp.appendChild(labelText);
+    // Eventos de tracking
+    anchor.addEventListener('targetFound', () => {
+      status.style.display = 'none';
+      label.setAttribute('visible', 'true');
+      pop(label, 1, 220);
+    });
 
-  anchor.appendChild(img);
-  anchor.appendChild(labelGrp);
+    anchor.addEventListener('targetLost', () => {
+      status.style.display = 'block';
+      status.textContent = 'No veo el marcador. Vuelve a apuntar.';
+      pop(label, 0, 180);
+      setTimeout(() => label.setAttribute('visible', 'false'), 190);
+    });
 
-  // Eventos de detección
-  anchor.addEventListener('targetFound', () => {
-    if (DEBUG) console.log(`🎯 targetFound idx=${index} → ${targetDef.name}`);
-    if (statusEl) statusEl.style.display = 'none';
-    labelGrp.setAttribute('visible', 'true');
-    popScale(labelGrp, 1, 240);
-  });
-
-  anchor.addEventListener('targetLost', () => {
-    if (DEBUG) console.log(`👋 targetLost  idx=${index} → ${targetDef.name}`);
-    if (statusEl) {
-      statusEl.style.display = 'block';
-      statusEl.textContent = 'No veo el marcador. Vuelve a apuntar.';
+    // Validación por consola: ¿existe el asset?
+    if (!document.getElementById(assetId)) {
+      console.warn(`⚠️ Falta <img id="${assetId}"> en <a-assets>. Revisa el ID o el archivo.`);
     }
-    popScale(labelGrp, 0, 200);
-    setTimeout(() => labelGrp.setAttribute('visible', 'false'), 210);
-  });
 
-  return anchor;
+    root.appendChild(anchor);
+  }
 }
 
-// === Inicio ===
+// Mensajes de estado globales
+scene.addEventListener('arReady', () => {
+  status.textContent = 'Listo. Apunta a cualquiera de las 23 banderas.';
+});
+
+scene.addEventListener('arError', () => {
+  status.textContent = 'Error de cámara/HTTPS/privacidad.';
+});
+
+// Inicializa
 window.addEventListener('load', () => {
-  const scene  = document.getElementById('scene');
-  const status = document.getElementById('status');
-  const root   = document.getElementById('anchors-root') || scene; // por si no usas anchors-root
-
-  // 1) Asegura que la escena apunte al .mind correcto
-  //    (Si ya lo pusiste en el HTML, esto es opcional; pero así lo garantizamos)
-  scene.setAttribute(
-    'mindar-image',
-    `imageTargetSrc: ${MIND_FILE};`
-    // Si hospedas MindAR local, añade:
-    // + ` wasmPath: ./lib/mindar/mindar-image-worker.wasm; workerPath: ./lib/mindar/mindar-image-worker.js;`
-  );
-
-  // 2) Crea los 2 anchors (idx 0 y 1)
-  clearChildren(root);
-  TARGETS.forEach((def, idx) => {
-    const anchor = createAnchor(def, idx, status);
-    root.appendChild(anchor);
-  });
-
-  // 3) Eventos de estado del motor
-  scene.addEventListener('arReady', () => {
-    if (DEBUG) console.log('✅ arReady');
-    if (status) { status.style.display = 'block'; status.textContent = 'Listo. Apunta a una bandera.'; }
-  });
-
-  scene.addEventListener('arError', (e) => {
-    console.error('❌ arError', e);
-    if (status) { status.style.display = 'block'; status.textContent = 'Error de cámara/HTTPS/privacidad.'; }
-  });
-
-  // Mensaje inicial
-  if (status) status.style.display = 'block';
+  status.style.display = 'block';
+  buildAnchors();
 });
