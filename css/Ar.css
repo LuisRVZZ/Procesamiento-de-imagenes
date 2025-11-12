@@ -28,3 +28,11 @@ a-scene {
   z-index: 2;
   display: none;
 }
+
+   .toolbar {
+        position: fixed; top: 10px; left: 10px; z-index: 3;
+        display: flex; gap: 8px;
+      }
+      .toolbar button {
+        padding: 6px 10px; border-radius: 8px; border: 0; cursor: pointer;
+      }
