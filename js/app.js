@@ -15,6 +15,13 @@ const triviaNext    = document.getElementById('triviaNext');
 const triviaFinish  = document.getElementById('triviaFinish');
 const triviaResult  = document.getElementById('triviaResult');
 
+/* === VIDEO (YouTube) === */
+const btnVideo     = document.getElementById('btnVideo');
+const videoModal   = document.getElementById('videoModal');
+const videoClose   = document.getElementById('videoClose');
+const videoCountry = document.getElementById('videoCountry');
+const ytFrame      = document.getElementById('ytFrame');
+
 let currentTargetIndex = null;
 let currentCountryLabel = null;
 
@@ -76,6 +83,26 @@ const QUESTION_BANK = {
   'SUDÁFRICA': { q:'Rasgo de su bandera:', options:['Una franja','Y multicolor','Cruz nórdica','Dos estrellas'], answer:1 },
   'URUGUAY': { q:'Figura en su bandera:', options:['Sol','Luna','Águila','Flor'], answer:0 }
 };
+
+/* ===== YouTube por país (IDs) ===== */
+/* ===== YouTube por país (IDs) ===== */
+const YT_BANK = {
+  'MÉXICO': 'OcEse_9US8c',          // VisitMexico promo :contentReference[oaicite:0]{index=0}
+  'ARGENTINA': '-CSzznX8dh4',       // Visit Argentina (oficial) :contentReference[oaicite:1]{index=1}
+  'ESTADOS UNIDOS': 'KafRmuuw6NE',  // Explore the United States (VisitTheUSA) :contentReference[oaicite:2]{index=2}
+  'JAPÓN': 'WLIv7HnZ_fE',           // JNTO “Where tradition meets the future” :contentReference[oaicite:3]{index=3}
+  'INGLATERRA': 'ezrfJus7f3g',      // VisitBritain “Starring GREAT Britain” :contentReference[oaicite:4]{index=4}
+  'CANADÁ': 'wlisSjsxXcQ',          // Explore Canada campaign :contentReference[oaicite:5]{index=5}
+  'COREA DEL SUR': 'zn5BlL-nN7M',   // Korea Tourism TVC (KTO) :contentReference[oaicite:6]{index=6}
+  'URUGUAY': 'quOuefqGn8g',         // “Visit Uruguay” travel promo :contentReference[oaicite:7]{index=7}
+  'SUDÁFRICA': 'f-wndBMavuI',       // South African Tourism “South Africa Awaits” :contentReference[oaicite:8]{index=8}
+  'ECUADOR': 'l9Ol9s-lbAY',         // “This is why Ecuador” travel video :contentReference[oaicite:9]{index=9}
+  'CATAR': '4UmO1h8XBhw',           // Visit Qatar campaign spot :contentReference[oaicite:10]{index=10}
+  'ARABIA SAUDITA': 'R6D7jQI4BD0',  // VisitSaudi “This Land Is Calling” :contentReference[oaicite:11]{index=11}
+  'BRASIL': 'OOsL3CUO7-k'           // Embratur/VisitBrasil campaña (USA focus) :contentReference[oaicite:12]{index=12}
+  // Puedes seguir agregando más países cuando quieras
+};
+
 
 /* ===== Listas para pausar/reanudar ===== */
 const modelsList = [];
@@ -301,6 +328,32 @@ function gradeCurrent() {
   if (trivia.selected === item.answer) trivia.score += 1;
 }
 
+/* ===== VIDEO (YouTube) ===== */
+function openYouTubeForCountry(countryLabel) {
+  const id = YT_BANK[countryLabel];
+  if (!id) { alert('Aún no hay video para este país.'); return; }
+
+  const params = new URLSearchParams({
+    autoplay: '1',
+    mute: '1',          // autoplay en móviles
+    playsinline: '1',   // evita fullscreen forzado en iOS
+    rel: '0',
+    modestbranding: '1',
+    controls: '1'
+  });
+
+  ytFrame.src = `https://www.youtube.com/embed/${id}?${params.toString()}`;
+  videoCountry.textContent = `País: ${countryLabel}`;
+
+  videoModal.classList.remove('hidden');
+  videoModal.setAttribute('aria-hidden', 'false');
+}
+function closeYouTubeModal() {
+  videoModal.classList.add('hidden');
+  videoModal.setAttribute('aria-hidden', 'true');
+  ytFrame.src = ''; // detiene el video
+}
+
 /* ===== Construcción de anchors ===== */
 function buildAnchors() {
   if (toolbar) toolbar.style.display = 'none'; // oculto hasta ver un target
@@ -337,10 +390,11 @@ function buildAnchors() {
       console.log(`✅ targetFound index=${i} (${cfg.label}) | modelId=${cfg.modelId}`);
       status.style.display = 'none';
       if (toolbar) toolbar.style.display = 'flex';
-      // Trivia: guardar país activo y mostrar botón
+      // Guardar país activo y mostrar botones
       currentTargetIndex = i;
       currentCountryLabel = cfg.label;
       if (btnTrivia) btnTrivia.style.display = 'inline-block';
+      if (btnVideo)  btnVideo.style.display  = 'inline-block';
 
       label.setAttribute('visible', 'true');
       pop(label, 1, 220);
@@ -350,12 +404,16 @@ function buildAnchors() {
       status.style.display = 'block';
       status.textContent = 'No veo el marcador. Vuelve a apuntar.';
       if (toolbar) toolbar.style.display = 'none';
-      // Trivia: limpiar país y ocultar botón
+
+      // Limpiar país y ocultar botones
       currentTargetIndex = null;
       currentCountryLabel = null;
       if (btnTrivia) btnTrivia.style.display = 'none';
-      // Si quieres cerrar modal automáticamente al perder target, descomenta:
+      if (btnVideo)  btnVideo.style.display  = 'none';
+
+      // (Opcional) Cerrar modales al perder target:
       // closeModal();
+      // closeYouTubeModal();
 
       pop(label, 0, 180);
       setTimeout(() => label.setAttribute('visible', 'false'), 190);
@@ -416,5 +474,22 @@ if (triviaFinish) {
     triviaFinish.classList.add('hidden');
     triviaResult.classList.remove('hidden');
     triviaResult.textContent = `Tu puntaje: ${trivia.score}/${total}`;
+  });
+}
+
+/* ===== Video: listeners ===== */
+if (btnVideo) {
+  btnVideo.addEventListener('click', () => {
+    if (!currentCountryLabel) {
+      alert('Escanea una bandera para ver el video de ese país.');
+      return;
+    }
+    openYouTubeForCountry(currentCountryLabel);
+  });
+}
+if (videoClose) videoClose.addEventListener('click', closeYouTubeModal);
+if (videoModal) {
+  videoModal.addEventListener('click', (e) => {
+    if (e.target.dataset.close === 'true') closeYouTubeModal();
   });
 }
