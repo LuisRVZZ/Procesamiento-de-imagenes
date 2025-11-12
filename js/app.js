@@ -11,8 +11,7 @@ const LABELS = [
   'BRASIL',           // flag4  -> targetIndex 4
   'CABO VERDE',       // flag5  -> targetIndex 5
   'CANADÁ',           // flag6  -> targetIndex 6
-  'CATAR',            // flag7  -> targetIndex 7
-  'CATAR',            // flag8  -> targetIndex 8 (solo si tu .mind tiene 2 de Catar)
+  'CATAR',            // flag7  -> targetIndex 7            
   'COLOMBIA',         // flag9  -> targetIndex 9
   'COREA DEL SUR',    // flag10 -> targetIndex 10
   'COSTA DE MARFIL',  // flag11 -> targetIndex 11
