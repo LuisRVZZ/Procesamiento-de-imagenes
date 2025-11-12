@@ -2,12 +2,12 @@
 <html lang="es">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AR – México (1 bandera)</title>
+  <title>AR – 2 banderas</title>
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-  <!-- MindAR A-Frame (si Edge/Safari bloquea el CDN, ver nota 3 abajo) -->
+  <!-- MindAR A-Frame -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
@@ -23,9 +23,9 @@
 
   <a-scene
     id="scene"
-    mindar-image="  
-      imageTargetSrc: /assets/targets/flagMexico.mind;
-      /* si hospedas MindAR local, descomenta y ajusta:
+    mindar-image="
+      imageTargetSrc: /assets/targets/dosbanderas.mind?v=2;
+      /* si hospedas MindAR local:
       wasmPath: /lib/mindar/mindar-image-worker.wasm;
       workerPath: /lib/mindar/mindar-image-worker.js;
       */
@@ -37,8 +37,9 @@
     embedded loading-screen="enabled:true">
 
     <a-assets>
-      <!-- imagen que dibujaremos encima del marcador (puede ser la misma del Creator) -->
-      <img id="flag" src="/assets/targets/Mexico.png" />
+      <!-- Las dos imágenes que dibujaremos encima de cada marcador -->
+      <img id="foto-arabia" src="/assets/targets/arabia-saudita.png" />
+      <img id="foto-argelia" src="/assets/targets/Argelia.png" />
     </a-assets>
 
     <!-- Luces -->
@@ -48,37 +49,46 @@
     <!-- Cámara -->
     <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-    <!-- Anchor del ÚNICO target del .mind (index 0) -->
+    <!-- Anchor 0: Arabia Saudita (PRIMERA imagen en el .mind) -->
     <a-entity mindar-image-target="targetIndex: 0">
-      <!-- Plano con la bandera flotando -->
-      <a-image src="#flag" position="0 0 0.12" width="1" height="0.6"
+      <a-image src="#foto-arabia" position="0 0 0.12" width="1" height="0.6"
                material="side:double"
                animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate">
       </a-image>
 
-      <!-- Cubo para confirmar detección (extra visual) -->
-      <a-box position="0.4 0.15 0.15" depth="0.06" height="0.06" width="0.06"
-             material="opacity:0.8"></a-box>
-
-      <!-- Rótulo -->
-      <a-entity id="label" position="0 -0.55 0.12" visible="false" scale="0 0 0">
+      <a-entity id="label-arabia" position="0 -0.55 0.12" visible="false" scale="0 0 0">
         <a-plane width="0.9" height="0.18"
                  material="color:#111; opacity:0.65; transparent:true; side:double"></a-plane>
-        <a-entity text="value: MÉXICO; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+        <a-entity text="value: ARABIA SAUDITA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
       </a-entity>
     </a-entity>
+
+    <!-- Anchor 1: Argelia (SEGUNDA imagen en el .mind) -->
+    <a-entity mindar-image-target="targetIndex: 1">
+      <a-image src="#foto-argelia" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
+               animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate">
+      </a-image>
+
+      <a-entity id="label-argelia" position="0 -0.55 0.12" visible="false" scale="0 0 0">
+        <a-plane width="0.9" height="0.18"
+                 material="color:#111; opacity:0.65; transparent:true; side:double"></a-plane>
+        <a-entity text="value: ARGELIA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+      </a-entity>
+    </a-entity>
+
   </a-scene>
 
   <script>
     const scene  = document.getElementById('scene');
     const status = document.getElementById('status');
-    const label  = document.getElementById('label');
-    const pop = (el,to,dur=240)=> el.setAttribute('animation__scale',
+
+    const pop = (el,to,dur=240)=> el?.setAttribute('animation__scale',
       {property:'scale', to:`${to} ${to} ${to}`, dur, easing:'easeOutCubic'});
 
     scene.addEventListener('arReady', ()=>{
       console.log('✅ arReady');
-      status.textContent = 'Listo. Apunta al marcador…';
+      status.textContent = 'Listo. Apunta a una de las dos banderas.';
     });
 
     scene.addEventListener('arError', (e)=>{
@@ -86,14 +96,22 @@
       status.textContent = 'Error de cámara/HTTPS/privacidad.';
     });
 
-    // estos eventos llegan desde el anchor activo
-    scene.addEventListener('targetFound', ()=>{
-      status.style.display = 'none';
-      label.setAttribute('visible','true'); pop(label,1,220);
-    });
-    scene.addEventListener('targetLost', ()=>{
-      status.style.display = 'block'; status.textContent = 'No veo el marcador. Vuelve a apuntar.';
-      pop(label,0,180); setTimeout(()=>label.setAttribute('visible','false'), 190);
+    // Mostrar/ocultar rótulos según el anchor que dispare
+    const showLabel = (id)=>{ const el = document.getElementById(id); el?.setAttribute('visible','true'); pop(el,1,220); };
+    const hideLabel = (id)=>{ const el = document.getElementById(id); pop(el,0,180); setTimeout(()=> el?.setAttribute('visible','false'), 190); };
+
+    // Suscribimos listeners por anchor
+    document.querySelectorAll('[mindar-image-target]').forEach((anchor)=>{
+      const labelId = anchor.querySelector('[id^="label-"]')?.id;
+      anchor.addEventListener('targetFound', ()=>{
+        status.style.display = 'none';
+        if (labelId) showLabel(labelId);
+      });
+      anchor.addEventListener('targetLost', ()=>{
+        status.style.display = 'block';
+        status.textContent = 'No veo el marcador. Vuelve a apuntar.';
+        if (labelId) hideLabel(labelId);
+      });
     });
 
     window.addEventListener('load', ()=>{ status.style.display = 'block'; });
