@@ -7,12 +7,15 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/Style.css">
- <!-- Bloque correcto para tu caso actual -->
- <!-- 1) MindAR (incluye THREE adentro) -->
-<script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.4/dist/mindar-image-three.prod.js"></script>
-
-<!-- 2) GLTFLoader que se adjunta a window.THREE -->
-<script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
+      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
+    }
+  }
+  </script>
 
 
 </head>
@@ -224,6 +227,8 @@
   </script>
 
   <script src="/js/script.js"></script>
-  <script src="/js/AR.MINDAR.js"></script>
+ <!--usa el archivo de módulos -->
+<script type="module" src="/js/AR.MINDAR.js"></script>
+
 </body>
 </html>
