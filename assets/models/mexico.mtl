@@ -1,0 +1,12 @@
+# Blender 4.5.2 LTS MTL File: 'None'
+# www.blender.org
+
+newmtl Material
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd C:/Users/Migue/Documents/7-8-Semestre/procesamiento-imagenes/modelos/maracas-02-colorful/source/Maracas 02 colorful/Maracas 02 colorful/Textures/body_Mat_Diffuse.png
