@@ -2,61 +2,103 @@ const scene  = document.getElementById('scene');
 const status = document.getElementById('status');
 const root   = document.getElementById('anchors-root');
 
-// Etiquetas en el mismo orden que tus <img id="flag0"... "flag22">
-const LABELS = [
-  'ARABIA SAUDITA',   // flag0  -> targetIndex 0
-  'ARGELIA',          // flag1  -> targetIndex 1
-  'ARGENTINA',        // flag2  -> targetIndex 2
-  'AUSTRALIA',        // flag3  -> targetIndex 3
-  'BRASIL',           // flag4  -> targetIndex 4
-  'CABO VERDE',       // flag5  -> targetIndex 5
-  'CANADÁ',           // flag6  -> targetIndex 6
-  'CATAR',            // flag7  -> targetIndex 7            
-  'COLOMBIA',         // flag9  -> targetIndex 9
-  'COREA DEL SUR',    // flag10 -> targetIndex 10
-  'COSTA DE MARFIL',  // flag11 -> targetIndex 11
-  'ECUADOR',          // flag12 -> targetIndex 12
-  'ESTADOS UNIDOS',   // flag13 -> targetIndex 13
-  'INGLATERRA',       // flag14 -> targetIndex 14
-  'IRÁN',             // flag15 -> targetIndex 15
-  'JAPÓN',            // flag16 -> targetIndex 16
-  'JORDANIA',         // flag17 -> targetIndex 17
-  'MÉXICO',           // flag18 -> targetIndex 18
-  'PARAGUAY',         // flag19 -> targetIndex 19
-  'SENEGAL',          // flag20 -> targetIndex 20
-  'SUDÁFRICA',        // flag21 -> targetIndex 21
-  'URUGUAY'           // flag22 -> targetIndex 22
+// Si quieres elegir aleatorio entre los candidatos, pon true:
+const RANDOM_PER_TARGET = false;
+
+// Para cada targetIndex (0..21), definimos:
+// - imgId: id de la bandera en <a-assets>
+// - label: texto del rótulo
+// - models: lista de modelos candidatos por orden de preferencia (IDs de <a-asset-item>)
+// - tx: transform por si el modelo requiere ajustes (scale, rotY, posY)
+const MAP = [
+  { imgId: 'flag0',  label: 'ARABIA SAUDITA',  models: ['mdlArabia','mdlCopa','mdlBalon'], tx: { scale: 0.60, rotY:  0, posY: 0.16 } },
+  { imgId: 'flag1',  label: 'ARGELIA',         models: ['mdlBalon','mdlCopa','mdlDonut'], tx: { scale: 0.65, rotY: 15, posY: 0.18 } },
+  { imgId: 'flag2',  label: 'ARGENTINA',       models: ['mdlArgentina','mdlBalon','mdlCopa'], tx:{ scale: 0.65, rotY:-20, posY: 0.17 } },
+  { imgId: 'flag3',  label: 'AUSTRALIA',       models: ['mdlBalon','mdlCopa','mdlDonut'], tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag4',  label: 'BRASIL',          models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag5',  label: 'CABO VERDE',      models: ['mdlBalon','mdlBote'],             tx: { scale: 0.55, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag6',  label: 'CANADÁ',          models: ['mdlCanada','mdlCoffee','mdlBalon'], tx:{ scale: 0.60, rotY: 15, posY: 0.18 } },
+  { imgId: 'flag7',  label: 'CATAR',           models: ['mdlCopa','mdlBalon','mdlCoffee'], tx: { scale: 0.58, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag8',  label: 'COLOMBIA',        models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag9',  label: 'COREA DEL SUR',   models: ['mdlCorea','mdlCoffee','mdlBalon'], tx:{ scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag10', label: 'COSTA DE MARFIL', models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag11', label: 'ECUADOR',         models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag12', label: 'ESTADOS UNIDOS',  models: ['mdlUSA','mdlCheese','mdlCoffee'], tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag13', label: 'INGLATERRA',      models: ['mdlCoffee','mdlBalon','mdlCopa'], tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag14', label: 'IRÁN',            models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag15', label: 'JAPÓN',           models: ['mdlJapon','mdlDonut','mdlCoffee'], tx:{ scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag16', label: 'JORDANIA',        models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag17', label: 'MÉXICO',          models: ['mdlMexico','mdlCopa','mdlBalon'], tx:{ scale: 0.60, rotY: 25, posY: 0.18 } },
+  { imgId: 'flag18', label: 'PARAGUAY',        models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag19', label: 'SENEGAL',         models: ['mdlBalon','mdlBote'],             tx: { scale: 0.55, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag20', label: 'SUDÁFRICA',       models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
+  { imgId: 'flag21', label: 'URUGUAY',         models: ['mdlBalon','mdlCopa'],             tx: { scale: 0.60, rotY:  0, posY: 0.18 } },
 ];
 
-// Animación “pop” para mostrar/ocultar el rótulo
-const pop = (el, to, dur = 240) => el?.setAttribute('animation__scale', {
-  property: 'scale',
-  to: `${to} ${to} ${to}`,
-  dur,
-  easing: 'easeOutCubic'
-});
+const pop = (el, to, dur = 240) =>
+  el?.setAttribute('animation__scale', { property: 'scale', to: `${to} ${to} ${to}`, dur, easing: 'easeOutCubic' });
 
-// Crea un anchor para cada targetIndex
+function addImage(anchor, imgId) {
+  const ok = document.getElementById(imgId);
+  if (!ok) console.warn(`⚠️ Falta <img id="${imgId}"> en <a-assets>.`);
+  const img = document.createElement('a-image');
+  img.setAttribute('src', `#${imgId}`);
+  img.setAttribute('position', '0 0 0.12'); // separa del plano
+  img.setAttribute('width', '1');
+  img.setAttribute('height', '0.6');
+  img.setAttribute('material', 'side: double');
+  img.setAttribute('animation', 'property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate');
+  anchor.appendChild(img);
+}
+
+function addModel(anchor, modelId, tx = {}) {
+  const ok = document.getElementById(modelId);
+  if (!ok) { console.warn(`⚠️ Falta <a-asset-item id="${modelId}"> en <a-assets>.`); return; }
+
+  const { scale = 0.6, rotY = 0, posY = 0.18 } = tx;
+  const model = document.createElement('a-entity');
+
+  // Si tu .glb usa DRACO, descomenta y deja el decoderPath:
+  // model.setAttribute('gltf-model', `#${modelId}; dracoDecoderPath: https://www.gstatic.com/draco/versioned/decoders/1.5.6/`);
+  model.setAttribute('gltf-model', `#${modelId}`);
+  model.setAttribute('position', `0 ${posY} 0.02`);
+  model.setAttribute('rotation', `0 ${rotY} 0`);
+  model.setAttribute('scale', `${scale} ${scale} ${scale}`);
+
+  // Flotadito
+  model.setAttribute('animation__float', 'property: position; to: 0 0.24 0.02; dur:1200; easing:easeInOutSine; loop:true; dir:alternate');
+
+  // Si el GLB trae animaciones:
+  // model.setAttribute('animation-mixer', '');
+
+  anchor.appendChild(model);
+}
+
+function pickModelId(models) {
+  if (!models || models.length === 0) return null;
+  if (RANDOM_PER_TARGET) {
+    // aleatorio entre candidatos que existan
+    const existing = models.filter(id => document.getElementById(id));
+    if (!existing.length) return null;
+    return existing[Math.floor(Math.random() * existing.length)];
+  } else {
+    // prioridad: el primero que exista
+    for (const id of models) {
+      if (document.getElementById(id)) return id;
+    }
+    return null;
+  }
+}
+
 function buildAnchors() {
-  for (let i = 0; i < LABELS.length; i++) {
-    const assetId = `flag${i}`;
-    const country = LABELS[i];
-
+  MAP.forEach((cfg, i) => {
     const anchor = document.createElement('a-entity');
     anchor.setAttribute('mindar-image-target', `targetIndex: ${i}`);
 
-    // Imagen (bandera) con “flotadito”
-    const img = document.createElement('a-image');
-    img.setAttribute('src', `#${assetId}`);
-    img.setAttribute('position', '0 0 0.12'); // separa del plano para evitar z-fighting
-    img.setAttribute('width', '1');
-    img.setAttribute('height', '0.6');
-    img.setAttribute('material', 'side: double');
-    img.setAttribute(
-      'animation',
-      'property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate'
-    );
-    anchor.appendChild(img);
+    if (cfg.imgId) addImage(anchor, cfg.imgId);
+
+    const chosenModelId = pickModelId(cfg.models);
+    if (chosenModelId) addModel(anchor, chosenModelId, cfg.tx);
 
     // Label
     const label = document.createElement('a-entity');
@@ -72,19 +114,18 @@ function buildAnchors() {
     label.appendChild(plate);
 
     const text = document.createElement('a-entity');
-    text.setAttribute('text', `value: ${country}; align: center; color: #fff; width: 2.4`);
+    text.setAttribute('text', `value: ${cfg.label}; align: center; color: #fff; width: 2.4`);
     text.setAttribute('position', '0 0 0.001');
     label.appendChild(text);
 
     anchor.appendChild(label);
 
-    // Eventos de tracking
+    // Eventos
     anchor.addEventListener('targetFound', () => {
       status.style.display = 'none';
       label.setAttribute('visible', 'true');
       pop(label, 1, 220);
     });
-
     anchor.addEventListener('targetLost', () => {
       status.style.display = 'block';
       status.textContent = 'No veo el marcador. Vuelve a apuntar.';
@@ -92,25 +133,16 @@ function buildAnchors() {
       setTimeout(() => label.setAttribute('visible', 'false'), 190);
     });
 
-    // Validación por consola: ¿existe el asset?
-    if (!document.getElementById(assetId)) {
-      console.warn(`⚠️ Falta <img id="${assetId}"> en <a-assets>. Revisa el ID o el archivo.`);
-    }
-
     root.appendChild(anchor);
-  }
+  });
 }
 
-// Mensajes de estado globales
 scene.addEventListener('arReady', () => {
-  status.textContent = 'Listo. Apunta a cualquiera de las 23 banderas.';
+  status.textContent = 'Listo. Apunta al marcador que quieras.';
 });
-
 scene.addEventListener('arError', () => {
   status.textContent = 'Error de cámara/HTTPS/privacidad.';
 });
-
-// Inicializa
 window.addEventListener('load', () => {
   status.style.display = 'block';
   buildAnchors();
