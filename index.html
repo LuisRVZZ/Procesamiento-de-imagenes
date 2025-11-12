@@ -1,233 +1,41 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fútbol AR - Realidad Aumentada</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./css/Style.css">
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/",
-      "mindar-image-three": "https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-three.prod.js"
-    }
-  }
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <meta name="theme-color" content="#000000"/>
+  <title>AR Fullscreen — MindAR</title>
 
+  <!-- MindAR CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image.css"/>
 
+  <!-- ÚNICO script: el bundle de MindAR (NO cargues three.min.js aparte) -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-three.prod.js" defer></script>
+
+  <link rel="stylesheet" href="./css/Ar.css"/>
 </head>
 <body>
-
-  <!-- Menú lateral-->
-  <div class="sidebar">
-    <div class="sidebar-header">
-      <h1><i class="fas fa-futbol"></i> Fútbol AR</h1>
-    </div>
-    <div class="nav-links">
-      <button onclick="showSection('inicio')" class="active-nav">
-        <i class="fas fa-home"></i> Inicio
-      </button>
-      <button onclick="showSection('stats')">
-        <i class="fas fa-chart-bar"></i> Estadísticas
-      </button>
-      <button onclick="showSection('videos')">
-        <i class="fas fa-play-circle"></i> Videos
-      </button>
-      <button onclick="showSection('trivia')">
-        <i class="fas fa-question-circle"></i> Trivia
-      </button>
-      <button onclick="showSection('ar')">
-        <i class="fas fa-vr-cardboard"></i> Experiencia AR
-      </button>
+  <!-- Overlay de inicio (gesto del usuario requerido para cámara + fullscreen) -->
+  <div id="start-overlay" class="overlay">
+    <div class="overlay-card">
+      <h1>Experiencia AR</h1>
+      <p>Presiona el botón para iniciar en pantalla completa.</p>
+      <button id="start-btn">Iniciar AR</button>
+      <p class="hint">
+        Apunta al marcador:
+        <a href="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" target="_blank" rel="noopener">
+          card.png
+        </a>
+      </p>
     </div>
   </div>
 
-  <!-- Contenido principal -->
-  <div class="content">
+  <!-- Contenedor de MindAR a pantalla completa -->
+  <div id="mindar-container" aria-label="AR view"></div>
 
-    <div id="inicio" class="section active">
-      <div class="hero">
-        <div class="hero-content">
-          <h2>Vive el Fútbol en Realidad Aumentada</h2>
-          <p>Sumérgete en estadísticas en tiempo real, revive jugadas épicas en 3D, disfruta de videos exclusivos y pon a prueba tu pasión con nuestra trivia interactiva.</p>
-          <div class="hero-buttons">
-            <button class="btn" onclick="showSection('ar')"><i class="fas fa-vr-cardboard"></i> Experiencia AR</button>
-            <button class="btn btn-secondary"><i class="fas fa-play"></i> Ver Demo</button>
-          </div>
-        </div>
-        <div class="hero-image">
-          <img src="https://cdn-icons-png.flaticon.com/512/69/69524.png" alt="Balón de fútbol AR">
-        </div>
-      </div>
-    </div>
+  <!-- Botón para salir (opcional) -->
+  <button id="exit-btn" class="exit-btn" hidden>Salir</button>
 
- <!-- Estadisticas-->
-    <div id="stats" class="section">
-      <h3>Estadísticas Destacadas</h3>
-      <div class="stats-container">
-        <div class="stat-box">
-          <h4>120</h4>
-          <p>Goles</p>
-        </div>
-        <div class="stat-box">
-          <h4>45</h4>
-          <p>Partidos</p>
-        </div>
-        <div class="stat-box">
-          <h4>30</h4>
-          <p>Jugadores</p>
-        </div>
-        <div class="stat-box">
-          <h4>12</h4>
-          <p>Copas</p>
-        </div>
-      </div>
-    </div>
-
-     <!-- ------------------------ -->
-     <!-- Videos-->
-     <!-- ------------------------ -->
-    <div id="videos" class="section">
-      <h3>Videos Destacados</h3>
-      <div class="video-container">
-        <div class="video-card">
-          <img src="/Imagenes/1629287252_471087_1632935001_noticiareportajes_grande.jpg" alt="Mejores Jugadas AR">
-          <h4>Mejores Jugadas AR</h4>
-        </div>
-        <div class="video-card">
-          <img src="/Imagenes/entrevista.jpg" alt="Tutorial AR">
-          <h4>Tutorial AR</h4>
-        </div>
-        <div class="video-card">
-          <img src="/Imagenes/entrevista2.jpg" alt="Entrevistas Exclusivas">
-          <h4>Entrevistas Exclusivas</h4>
-        </div>
-      </div>
-    </div>
-
-        <!-- ------------------------ -->
-        <!-- Trivia-->
-        <!-- ------------------------ -->
-    <div id="trivia" class="section">
-      <div class="trivia-container">
-        <h3>Trivia de Fútbol</h3>
-        <div class="trivia-header">
-          <div class="score">
-            <i class="fas fa-trophy"></i>
-            <span id="score">0</span> puntos
-          </div>
-          <div class="progress-container">
-            <div class="progress-bar">
-              <div class="progress" id="progress"></div>
-            </div>
-          </div>
-          <div class="question-count">
-            Pregunta <span id="current-question">1</span> de <span id="total-questions">5</span>
-          </div>
-        </div>
-        <div class="question-text" id="question">¿Quién ganó el mundial de 2022?</div>
-        <div class="options-container" id="options-container">
-          <div class="option">Argentina</div>
-          <div class="option">Francia</div>
-          <div class="option">Brasil</div>
-          <div class="option">España</div>
-        </div>
-        <div class="trivia-controls">
-          <button class="trivia-btn next" id="next-btn" disabled>
-            <i class="fas fa-arrow-right"></i> Siguiente
-          </button>
-          <button class="trivia-btn restart" id="restart-btn">
-            <i class="fas fa-redo"></i> Reiniciar
-          </button>
-        </div>
-      </div>
-    </div>
-
-        <!-- ------------------------ -->
-        <!-- AR-->
-        <!-- ------------------------ -->
-    <div id="ar" class="section">
-      <h3>Experiencia de Realidad Aumentada</h3>
-      
-      <div class="ar-container">
-        <div class="ar-view">
-          <div class="camera-placeholder" id="camera-placeholder">
-            <i class="fas fa-camera"></i>
-            <p>La cámara se activará aquí</p>
-          </div>
-        
-            
-           <button id="fullscreen-btn" class="fullscreen-btn" title="Pantalla completa">
-              <i class="fas fa-expand"></i>
-            </button>
-        </div>
-        
-        <div class="ar-controls">
-          <button id="start-camera" class="btn btn-ar">
-            <i class="fas fa-video"></i> Activar Cámara
-          </button>
-          <button id="stop-camera" class="btn btn-ar btn-secondary" disabled>
-            <i class="fas fa-stop"></i> Detener Cámara
-          </button>
-          
-           <div class="ar-features">
-              <h4>Funcionalidades AR</h4>
-              <div class="feature-buttons">
-                  <button class="feature-btn" disabled>
-                    <i class="fas fa-running"></i> Activar animacion
-                  </button>
-                  <button class="feature-btn" disabled>
-                    <i class="fas fa-pause-circle"></i> Detener animacion
-                  </button>
-                  <button class="feature-btn" disabled>
-                    <i class="fas fa-magic"></i> Filtros
-                  </button>
-                </div>
-            </div>
-        </div>
-        
-        <div class="ar-instructions">
-          <h4>Instrucciones:</h4>
-          <ol>
-            <li>Haz clic en "Activar Cámara" para comenzar</li>
-            <li>Apunta a una bandera para experiencias AR</li>
-            <li>Usa los botones para interactuar con los elementos</li>
-            <li>Haz clic en "Detener Cámara" cuando termines</li>
-          </ol>
-        </div>
-      </div>
-    </div>
-
-
-    <footer>
-      &copy; 2026 Fútbol AR - Todos los derechos reservados
-    </footer>
-  </div>
-
-  <script>
-   function showSection(id, btn = null) {
-  // Remover clase active de todos los botones del sidebar
-  document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active-nav'));
-  
-  // Si hay un botón pasado (botón que hizo clic), lo activamos
-  if(btn) btn.classList.add('active-nav');
-  
-  // También buscamos el botón del sidebar que tiene onclick con la misma sección
-  let sidebarBtn = document.querySelector(`.sidebar button[onclick="showSection('${id}')"]`);
-  if(sidebarBtn) sidebarBtn.classList.add('active-nav');
-
-  // Ocultar todas las secciones y mostrar la seleccionada
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  }
-  </script>
-
-  <script src="./js/script.js"></script>
- <!--usa el archivo de módulos -->
- <script type="module" src="./js/AR.MINDAR.js"></script>
-
+  <script src="./js/app.js" defer></script>
 </body>
 </html>
