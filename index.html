@@ -2,25 +2,29 @@
 <html lang="es">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AR Mundial</title>
+    <title>AR Mundial – 2 banderas</title>
 
-    <!-- A-Frame + MindAR A-Frame -->
+    <!-- A-Frame + MindAR -->
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
+    <style>
+      html, body { margin:0; height:100%; overflow:hidden; }
+      a-scene { position:fixed; inset:0; }
+      .banner {
+        position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+        background: rgba(0,0,0,.6); color: #fff; padding: 6px 10px;
+        border-radius: 8px; z-index: 2; font-family: system-ui, sans-serif;
+      }
+    </style>
     <link rel="stylesheet" href="./css/Ar.css" />
   </head>
   <body>
-    <div class="toolbar">
-      <button id="btnA">Grupo A</button>
-      <button id="btnB">Grupo B</button>
-    </div>
-
-    <div class="paused-banner" id="status">Apunta la cámara al marcador…</div>
+    <div id="status" class="banner">Apunta la cámara al marcador…</div>
 
     <a-scene
       id="scene"
-      mindar-image="imageTargetSrc: ./assets/targets/grupoA.mind;"
+      mindar-image="imageTargetSrc: ./assets/targets/dosbanderas.mind;"
       color-space="sRGB"
       renderer="colorManagement: true, physicallyCorrectLights"
       vr-mode-ui="enabled: false"
@@ -28,59 +32,60 @@
       embedded
       loading-screen="enabled: true">
 
-      <!-- Assets: registra aquí tus fotos o modelos -->
+      <!-- Assets: SOLO las dos imágenes que vas a mostrar -->
       <a-assets>
-        <!-- EJEMPLO con fotos; agrega las tuyas (id y src) -->
-   
-        
-      
-     <!--GrupoA-->
-        <img id="foto-ArabiaSaudita"    src="./assets/targets/arabia-saudita.png" />
-        <img id="foto-Argelia"   src="./assets/targets/Argelia.png" />
-        <img id="foto-argentina" src="./assets/targets/Argentina.png" />
-        <img id="foto-Australia"  src="./assets/targets/Australia.png" />
-        <img id="foto-brasil"    src="./assets/targets/Brasil.png" />
-        <img id="foto-CaboVerde"  src="./assets/targets/cabo-verde.png" />
-        <img id="foto-canada"  src="./assets/targets/canada.png" />
-        <img id="foto-Catar"  src="./assets/targets/Catar.png" />
-        <img id="foto-Colombia"  src="./assets/targets/Colombia.png" />
-        <img id="foto-Coreadelsur"  src="./assets/targets/corea-del-sur.png" />
-        <img id="foto-CostadeMarfil"  src="./assets/targets/costa-de-marfil.png" />
-        <img id="foto-Ecuador"  src="./assets/targets/Ecuador.png" />
-
-
-
-        <!--GrupoB-->
-        <img id="foto-Estadosunidos"    src="./assets/targets/estados-unidos.png" />
-        <img id="foto-Inglaterra"    src="./assets/targets/Inglaterra.png" />
-        <img id="foto-Iran"    src="./assets/targets/Iran.png" />
-        <img id="foto-japon"    src="./assets/targets/japon.png" />
-        <img id="foto-jordania"    src="./assets/targets/jordania.png" />
-        <img id="foto-mexico"    src="./assets/targets/Mexico.png" />
-        <img id="foto-Paraguay"    src="./assets/targets/Paraguay.png" />
-        <img id="foto-sudafrica"    src="./assets/targets/sudafrica.png" />
-        <img id="foto-Uruguay"    src="./assets/targets/Uruguay.png" />
-
-
-        
-        <!-- ...continúa con tus 13 y 13 -->
+        <img id="foto-ArabiaSaudita" src="./assets/targets/arabia-saudita.png" />
+        <img id="foto-Argelia"       src="./assets/targets/Argelia.png" />
       </a-assets>
 
-      <!-- Luces y cámara -->
+      <!-- Luces -->
       <a-entity light="type: directional; intensity: 1.15" position="1 1 1"></a-entity>
       <a-entity light="type: ambient; intensity: 0.6"></a-entity>
-      <!-- TEST: anchor fijo para targetIndex 0 del grupo actual -->
-        <a-entity id="anchor-test" mindar-image-target="targetIndex: 0">
-        <a-box position="0 0 0.2" depth="0.05" height="0.2" width="0.2"
-                material="color: #39f; opacity: 0.8"></a-box>
-        </a-entity>
 
       <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
 
-      <!-- Aquí inyectaremos *por JS* los anchors del grupo activo -->
-      <a-entity id="anchors-root"></a-entity>
+      <!-- === Anchor 0: Arabia Saudita (PRIMERA imagen del .mind) === -->
+      <a-entity mindar-image-target="targetIndex: 0">
+        <a-image
+          src="#foto-ArabiaSaudita"
+          position="0 0 0.12"
+          width="1"
+          height="0.6"
+          material="side:double"
+          animation="property: position; to: 0 0.08 0.12; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
+        </a-image>
+        <a-text value="ARABIA SAUDITA" align="center" color="#fff" position="0 -0.55 0.12" width="2.4"></a-text>
+      </a-entity>
+
+      <!-- === Anchor 1: Argelia (SEGUNDA imagen del .mind) === -->
+      <a-entity mindar-image-target="targetIndex: 1">
+        <a-image
+          src="#foto-Argelia"
+          position="0 0 0.12"
+          width="1"
+          height="0.6"
+          material="side:double"
+          animation="property: position; to: 0 0.08 0.12; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
+        </a-image>
+        <a-text value="ARGELIA" align="center" color="#fff" position="0 -0.55 0.12" width="2.4"></a-text>
+      </a-entity>
     </a-scene>
 
-    <script src="./js/app.js"></script>
+    <script>
+      const scene  = document.getElementById('scene');
+      const status = document.getElementById('status');
+
+      scene.addEventListener('arReady', ()=>{
+        status.textContent = 'Listo. Apunta a una de las dos banderas.';
+      });
+      scene.addEventListener('targetFound', ()=>{
+        status.style.display = 'none';
+      });
+      scene.addEventListener('targetLost', ()=>{
+        status.style.display = 'block';
+        status.textContent   = 'No veo el marcador. Vuelve a apuntar.';
+      });
+      window.addEventListener('load', ()=>{ status.style.display = 'block'; });
+    </script>
   </body>
 </html>
