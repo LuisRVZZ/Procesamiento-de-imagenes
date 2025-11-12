@@ -1,41 +1,31 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <meta name="theme-color" content="#000000"/>
-  <title>AR Fullscreen — MindAR</title>
-
-  <!-- MindAR CSS -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image.css"/>
-
-  <!-- ÚNICO script: el bundle de MindAR (NO cargues three.min.js aparte) -->
-  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.1.5/dist/mindar-image-three.prod.js" defer></script>
-
-  <link rel="stylesheet" href="./css/Ar.css"/>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#000000" />
+  <title>Cámara Fullscreen</title>
+  <link rel="stylesheet" href="./css/Ar.css" />
 </head>
 <body>
-  <!-- Overlay de inicio (gesto del usuario requerido para cámara + fullscreen) -->
-  <div id="start-overlay" class="overlay">
-    <div class="overlay-card">
-      <h1>Experiencia AR</h1>
-      <p>Presiona el botón para iniciar en pantalla completa.</p>
-      <button id="start-btn">Iniciar AR</button>
-      <p class="hint">
-        Apunta al marcador:
-        <a href="https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.png" target="_blank" rel="noopener">
-          card.png
-        </a>
-      </p>
+  <!-- Contenedor a pantalla completa -->
+  <div id="app">
+    <!-- Vista de cámara (cubre toda la pantalla) -->
+    <video id="preview" autoplay playsinline muted></video>
+
+    <!-- Overlay mínimo para entrar a fullscreen si el navegador lo pide -->
+    <button id="fsBtn" class="fs-btn" hidden>Pantalla completa</button>
+
+    <!-- Controles opcionales (se pueden ocultar en prod) -->
+    <div class="hud">
+      <button id="switchBtn" title="Cambiar cámara" hidden>↺</button>
+      <button id="torchBtn" title="Linterna" hidden>🔦</button>
     </div>
+
+    <!-- Log pequeño para depurar (quítalo si no lo quieres) -->
+    <div id="log" class="log"></div>
   </div>
 
-  <!-- Contenedor de MindAR a pantalla completa -->
-  <div id="mindar-container" aria-label="AR view"></div>
-
-  <!-- Botón para salir (opcional) -->
-  <button id="exit-btn" class="exit-btn" hidden>Salir</button>
-
-  <script src="./js/app.js" defer></script>
+  <script src="./js/app.js"></script>
 </body>
 </html>

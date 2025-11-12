@@ -1,105 +1,165 @@
-// Usa THREE desde el bundle de MindAR
-const THREE = (window.MINDAR && window.MINDAR.IMAGE && window.MINDAR.IMAGE.THREE);
+const logEl = document.getElementById('log');
+const video = document.getElementById('preview');
+const fsBtn = document.getElementById('fsBtn');
+const switchBtn = document.getElementById('switchBtn');
+const torchBtn = document.getElementById('torchBtn');
 
-let mindarThree = null;
-let renderer = null, scene = null, camera = null;
-let started = false;
+let currentStream = null;
+let videoInputs = [];      // dispositivos de video
+let currentDeviceId = null;
+let torchOn = false;
 
-const startBtn = document.getElementById('start-btn');
-const exitBtn  = document.getElementById('exit-btn');
-const overlay  = document.getElementById('start-overlay');
-const container = document.getElementById('mindar-container');
+function log(msg) {
+  console.log(msg);
+  if (!logEl) return;
+  const txt = (typeof msg === 'string') ? msg : JSON.stringify(msg, null, 2);
+  logEl.textContent = txt;
+}
 
-async function enterFullscreen(el) {
+function stopStream() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+    currentStream = null;
+  }
+  video.srcObject = null;
+}
+
+async function goFullscreenIfPossible() {
+  // Algunos navegadores requieren gesto; mostramos botón si falla
   try {
     if (!document.fullscreenElement) {
-      if (el.requestFullscreen) await el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) await el.webkitRequestFullscreen(); // Safari
-    }
-    if (screen.orientation && screen.orientation.lock) {
-      try { await screen.orientation.lock('portrait'); } catch {}
+      await document.documentElement.requestFullscreen?.();
     }
   } catch (e) {
-    console.warn('[FS] No se pudo entrar a fullscreen:', e);
+    fsBtn.hidden = false; // mostrará botón para pedir fullscreen manualmente
   }
 }
 
-async function startAR() {
-  if (started) return;
-
-  // Comprobaciones
-  if (!window.MINDAR || !window.MINDAR.IMAGE) {
-    alert('MindAR no está cargado (revisa el <script> del CDN).');
-    return;
-  }
-  if (!THREE) {
-    alert('THREE no está disponible desde el bundle de MindAR.');
-    return;
-  }
-
-  await enterFullscreen(document.documentElement);
-
-  try {
-    console.log('[AR] Creando MindARThree…');
-    mindarThree = new window.MINDAR.IMAGE.MindARThree({
-      container,
-      imageTargetSrc: 'https://cdn.jsdelivr.net/gh/hiukim/mind-ar-js@1.2.5/examples/image-tracking/assets/card-example/card.mind',
-      uiLoading: true,
-      uiScanning: true,
-      maxTrack: 1,
-    });
-
-    ({ renderer, scene, camera } = mindarThree);
-
-    // Luz y cubo de prueba
-    const light = new THREE.HemisphereLight(0xffffff, 0x222233, 1.0);
-    scene.add(light);
-
-    const cube = new THREE.Mesh(
-      new THREE.BoxGeometry(0.5, 0.5, 0.5),
-      new THREE.MeshNormalMaterial()
-    );
-
-    const anchor = mindarThree.addAnchor(0);
-    anchor.group.add(cube);
-
-    console.log('[AR] Iniciando MindAR…');
-    await mindarThree.start(); // si falla la cámara, salta al catch
-
-    renderer.setAnimationLoop(() => {
-      cube.rotation.x += 0.01;
-      cube.rotation.y += 0.01;
-      renderer.render(scene, camera);
-    });
-
-    started = true;
-    overlay.hidden = true;
-    exitBtn.hidden = false;
-    console.log('[AR] Iniciado OK');
-  } catch (err) {
-    console.error('[AR] Error al iniciar:', err);
-    alert('No se pudo iniciar la cámara o MindAR.\n• Revisa permisos\n• Usa HTTPS o localhost\n• Cierra otras apps que usen la cámara');
-  }
+// Devuelve dispositivos videoinput
+async function getVideoInputs() {
+  const all = await navigator.mediaDevices.enumerateDevices();
+  return all.filter(d => d.kind === 'videoinput');
 }
 
-async function stopAR() {
-  if (!started || !mindarThree) return;
+// Intenta abrir cámara con constraints dados
+async function startWith(constraints, tag='') {
   try {
-    await mindarThree.stop();
-    await mindarThree.renderer.setAnimationLoop(null);
+    log(`getUserMedia ${tag}…`);
+    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+    stopStream();
+    currentStream = stream;
+    video.srcObject = stream;
+    await video.play();
+
+    const track = stream.getVideoTracks()[0];
+    const settings = track.getSettings();
+    currentDeviceId = settings.deviceId || currentDeviceId;
+
+    // Torch disponible?
+    const caps = track.getCapabilities?.() || {};
+    const canTorch = 'torch' in caps;
+    torchBtn.hidden = !canTorch;
+    torchOn = false;
+    if (canTorch) torchBtn.textContent = '🔦';
+
+    // Actualiza lista de cámaras (para switch)
+    videoInputs = await getVideoInputs();
+    switchBtn.hidden = videoInputs.length <= 1;
+
+    log({ ok: true, tag, label: track.label, settings, canTorch });
+    return true;
   } catch (e) {
-    console.warn('[AR] Error al detener:', e);
+    log(`Fallo (${tag}): ${e.name} - ${e.message}`);
+    return false;
   }
-  container.innerHTML = '';
-  started = false;
-
-  try { if (document.fullscreenElement) await document.exitFullscreen(); } catch {}
-  overlay.hidden = false;
-  exitBtn.hidden = true;
 }
 
-startBtn.addEventListener('click', startAR);
-exitBtn.addEventListener('click', stopAR);
+// Preferir cámara trasera en móvil, con fallbacks
+async function startAutoRear() {
+  // 1) Intento directo con facingMode environment (el estándar)
+  if (await startWith({ video: { facingMode: { exact: 'environment' } } }, 'env-exact')) return true;
+  if (await startWith({ video: { facingMode: 'environment' } }, 'env-ideal')) return true;
 
-window.addEventListener('pagehide', stopAR);
-window.addEventListener('beforeunload', stopAR);
+  // 2) Pedir permiso mínimo para poder leer labels y elegir trasera por nombre
+  // (algunos navegadores ocultan labels hasta que se obtiene un stream)
+  if (!currentStream) {
+    if (!(await startWith({ video: true }, 'default-temp'))) {
+      // 3) Si ni default permite, ya no hay nada que hacer
+      return false;
+    }
+  }
+
+  // Ya tengo permisos: obtengo las cámaras con labels visibles
+  videoInputs = await getVideoInputs();
+
+  // Busco una que suene a trasera
+  const candidates = videoInputs.filter(d =>
+    /back|rear|environment|trase|atrás|trasera/i.test(d.label)
+  );
+
+  const pick = (candidates[0] || videoInputs.find(d => d.deviceId !== currentDeviceId) || videoInputs[0]);
+  if (!pick) return true; // ya tenemos stream al menos
+
+  // Cambiar a esa cámara explícitamente
+  if (await startWith({ video: { deviceId: { exact: pick.deviceId } } }, 'deviceId-rear')) {
+    return true;
+  }
+
+  return true; // al menos quedó la default
+}
+
+// Cambiar a la siguiente cámara
+async function switchCamera() {
+  if (!videoInputs.length) videoInputs = await getVideoInputs();
+  if (!videoInputs.length) return;
+
+  const idx = Math.max(0, videoInputs.findIndex(d => d.deviceId === currentDeviceId));
+  const next = videoInputs[(idx + 1) % videoInputs.length];
+  await startWith({ video: { deviceId: { exact: next.deviceId } } }, 'switch');
+}
+
+// Torch (si soporta)
+async function toggleTorch() {
+  if (!currentStream) return;
+  const track = currentStream.getVideoTracks()[0];
+  const caps = track.getCapabilities?.() || {};
+  if (!('torch' in caps)) return;
+
+  torchOn = !torchOn;
+  try {
+    await track.applyConstraints({ advanced: [{ torch: torchOn }] });
+    torchBtn.textContent = torchOn ? '🔦 ON' : '🔦';
+  } catch (e) {
+    log('No se pudo activar torch: ' + e.message);
+  }
+}
+
+// Eventos
+switchBtn.addEventListener('click', switchCamera);
+torchBtn.addEventListener('click', toggleTorch);
+fsBtn.addEventListener('click', async () => {
+  try {
+    await document.documentElement.requestFullscreen?.();
+    fsBtn.hidden = true;
+  } catch {}
+});
+
+// Arranque
+(async function init() {
+  if (!navigator.mediaDevices?.getUserMedia) {
+    log('Este navegador no soporta getUserMedia.');
+    return;
+  }
+
+  // Intenta fullscreen (si falla, aparece el botón)
+  await goFullscreenIfPossible();
+
+  // Arranca tratando de usar la trasera
+  const ok = await startAutoRear();
+  if (!ok) {
+    log('No se pudo iniciar cámara.\n• Asegura HTTPS/localhost\n• Da permisos\n• Cierra apps que usen la cámara (Zoom/WhatsApp/Teams).');
+  }
+
+  // Ajuste de orientación (best-effort)
+  try { await screen.orientation?.lock?.('portrait'); } catch {}
+})();
