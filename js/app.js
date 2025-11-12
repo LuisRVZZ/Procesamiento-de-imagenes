@@ -21,7 +21,7 @@ const GROUPS = {
     { name: 'Corea del Sur',    asset: '#foto-Coreadelsur',    aspect: 0.6 },
     { name: 'Costa de Marfil',  asset: '#foto-CostadeMarfil',  aspect: 0.6 },
     { name: 'Ecuador',          asset: '#foto-Ecuador',        aspect: 0.6 },
-    // TODO: agrega aquí el resto del Grupo A si tu .mind A tiene más índices
+    // ...agrega aquí si tu grupo A tiene más índices
   ],
   B: [
     { name: 'Estados Unidos',   asset: '#foto-Estadosunidos',  aspect: 0.6 },
@@ -33,15 +33,18 @@ const GROUPS = {
     { name: 'Paraguay',         asset: '#foto-Paraguay',       aspect: 0.6 },
     { name: 'Sudáfrica',        asset: '#foto-sudafrica',      aspect: 0.6 },
     { name: 'Uruguay',          asset: '#foto-Uruguay',        aspect: 0.6 },
-    // TODO: agrega aquí el resto del Grupo B si tu .mind B tiene más índices
+    // ...agrega aquí si tu grupo B tiene más índices
   ]
 };
 
 // ===== 3) Parámetros visuales =====
-const WIDTH = 1.0; // ancho del plano de la foto
+const WIDTH   = 1.0;   // ancho del plano de la foto
 const LABEL_H = 0.18;
 
-// ===== 4) Utilidades =====
+// ===== 4) DEBUG =====
+const DEBUG = true;
+
+// ===== 5) Utilidades =====
 function clearAnchors(root) {
   while (root.firstChild) root.removeChild(root.firstChild);
 }
@@ -56,7 +59,32 @@ function popScale(el, to, dur = 260) {
   });
 }
 
-// ===== 5) Construcción de anchors según grupo activo =====
+function attachAnchorHandlers(anchor, labelGrp, status, i, f, groupKey) {
+  anchor.addEventListener('targetFound', () => {
+    if (DEBUG && status) {
+      status.style.display = 'block';
+      status.textContent = `Encontrado: [${groupKey}] idx=${i} → ${f.name}`;
+      setTimeout(() => { status.style.display = 'none'; }, 1200);
+    } else if (status) {
+      status.style.display = 'none';
+    }
+    labelGrp.setAttribute('visible', 'true');
+    popScale(labelGrp, 1, 260);
+    console.log(`targetFound -> grupo=${groupKey} idx=${i} name=${f.name}`);
+  });
+
+  anchor.addEventListener('targetLost', () => {
+    if (status) {
+      status.style.display = 'block';
+      status.textContent = 'No veo el marcador. Vuelve a apuntar.';
+    }
+    popScale(labelGrp, 0, 200);
+    setTimeout(() => labelGrp.setAttribute('visible', 'false'), 210);
+    console.log(`targetLost  -> grupo=${groupKey} idx=${i} name=${f.name}`);
+  });
+}
+
+// ===== 6) Construcción de anchors según grupo activo =====
 function buildAnchorsForGroup(groupKey) {
   const root   = document.getElementById('anchors-root');
   const status = document.getElementById('status');
@@ -106,27 +134,14 @@ function buildAnchorsForGroup(groupKey) {
     anchor.appendChild(img);
     anchor.appendChild(labelGrp);
 
-    // Eventos MindAR
-    anchor.addEventListener('targetFound', () => {
-      if (status) status.style.display = 'none';
-      labelGrp.setAttribute('visible', 'true');
-      popScale(labelGrp, 1, 260);
-    });
-
-    anchor.addEventListener('targetLost', () => {
-      if (status) {
-        status.style.display = 'block';
-        status.textContent = 'No veo el marcador. Vuelve a apuntar.';
-      }
-      popScale(labelGrp, 0, 200);
-      setTimeout(() => labelGrp.setAttribute('visible', 'false'), 210);
-    });
+    // Handlers (con debug opcional)
+    attachAnchorHandlers(anchor, labelGrp, status, i, f, groupKey);
 
     root.appendChild(anchor);
   });
 }
 
-// ===== 6) Cambiar dinámicamente el archivo .mind (A/B) =====
+// ===== 7) Cambiar dinámicamente el archivo .mind (A/B) =====
 function setMindFile(groupKey) {
   const scene = document.getElementById('scene');
   const file  = MIND_FILE[groupKey];
@@ -137,9 +152,11 @@ function setMindFile(groupKey) {
 
   // Reconstruye anchors para que targetIndex 0..N coincida con el grupo
   buildAnchorsForGroup(groupKey);
+
+  if (DEBUG) console.log(`Mind file activado: ${file} (grupo ${groupKey})`);
 }
 
-// ===== 7) Inicio =====
+// ===== 8) Inicio =====
 window.addEventListener('load', () => {
   // Grupo inicial (coincide con tu HTML)
   setMindFile('A');
