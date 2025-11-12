@@ -1,57 +1,59 @@
 :root {
-  /* Sistema de diseño moderno */
-  --bg-primary: #0f1419;
-  --bg-secondary: #1a1f2e;
-  --bg-card: #1e2435;
-  --bg-overlay: rgba(15, 20, 25, 0.95);
+  /* Sistema de diseño moderno - Tema claro para AR */
+  --bg-primary: rgba(255, 255, 255, 0.1);
+  --bg-secondary: rgba(255, 255, 255, 0.2);
+  --bg-card: rgba(17, 25, 40, 0.95);
+  --bg-overlay: rgba(17, 25, 40, 0.9);
   --accent-primary: #3a86ff;
   --accent-secondary: #8338ec;
   --accent-hover: #5a9cff;
   --text-primary: #ffffff;
-  --text-secondary: #a0a8c0;
-  --text-muted: #8a93ad;
+  --text-secondary: #e2e8f0;
+  --text-muted: #a0aec0;
   --success: #4cc9f0;
   --warning: #f72585;
   --border-radius: 16px;
   --border-radius-sm: 12px;
-  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.3);
-  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 20px 60px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 10px 30px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.15);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Reset y base */
+/* Reset y base - Fondo transparente para ver la cámara */
 html, body {
   margin: 0;
   height: 100%;
   overflow: hidden;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
-  background: var(--bg-primary);
+  background: transparent !important;
   color: var(--text-primary);
 }
 
+/* Escena AR completamente transparente */
 a-scene {
   position: fixed;
   inset: 0;
   z-index: 1;
+  background: transparent !important;
 }
 
-/* Banner de estado mejorado */
+/* Banner de estado - Diseño glass claro */
 .banner {
   position: fixed;
   top: 20px;
   left: 50%;
   transform: translateX(-50%);
-  background: linear-gradient(135deg, var(--bg-overlay), rgba(30, 36, 53, 0.95));
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px);
-  color: var(--text-primary);
+  color: #2d3748;
   padding: 12px 24px;
   border-radius: var(--border-radius);
   z-index: 100;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: var(--shadow-lg);
   animation: slideInDown 0.5s ease-out;
 }
@@ -67,22 +69,22 @@ a-scene {
   }
 }
 
-/* Toolbar moderna */
+/* Toolbar moderna - Glass claro */
 #toolbar {
   position: fixed;
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%);
   z-index: 100;
-  display: none; /* Oculto hasta detección */
+  display: none;
   justify-content: center;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, var(--bg-overlay), rgba(30, 36, 53, 0.95));
+  background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(20px);
   padding: 16px 24px;
   border-radius: var(--border-radius);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   box-shadow: var(--shadow-lg);
   animation: slideInUp 0.5s ease-out;
 }
@@ -98,9 +100,10 @@ a-scene {
   }
 }
 
+/* Botones con contraste para fondo claro */
 .toolbar-btn {
-  background: var(--bg-card);
-  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.25);
+  color: #2d3748;
   border: none;
   border-radius: var(--border-radius-sm);
   padding: 12px 20px;
@@ -114,10 +117,12 @@ a-scene {
   min-width: 140px;
   justify-content: center;
   box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
 }
 
 .toolbar-btn:hover {
   background: var(--accent-primary);
+  color: white;
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(58, 134, 255, 0.4);
 }
@@ -126,13 +131,7 @@ a-scene {
   transform: translateY(0);
 }
 
-.toolbar-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-}
-
-/* Indicador de país detectado */
+/* Indicador de país - Diseño claro */
 .country-indicator {
   position: fixed;
   top: 20px;
@@ -157,7 +156,7 @@ a-scene {
   font-size: 16px;
 }
 
-/* Sistema de modales mejorado */
+/* Sistema de modales - Manteniendo contraste */
 .modal.hidden {
   display: none;
 }
@@ -181,7 +180,7 @@ a-scene {
 .modal-backdrop {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(8px);
 }
 
@@ -195,7 +194,7 @@ a-scene {
   border-radius: var(--border-radius);
   padding: 24px;
   box-shadow: var(--shadow-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   display: flex;
   flex-direction: column;
@@ -219,7 +218,7 @@ a-scene {
   gap: 16px;
   margin-bottom: 20px;
   padding-bottom: 16px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .modal-header h3 {
@@ -233,7 +232,7 @@ a-scene {
 }
 
 .modal-header .close {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border: none;
   color: var(--text-primary);
   font-size: 1.2rem;
@@ -263,7 +262,7 @@ a-scene {
 }
 
 .modal-body::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
 
@@ -292,7 +291,7 @@ a-scene {
   color: var(--text-muted);
   margin-bottom: 20px;
   padding: 8px 12px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-sm);
 }
 
@@ -304,7 +303,7 @@ a-scene {
   color: var(--text-primary);
 }
 
-/* Opciones de trivia mejoradas */
+/* Opciones de trivia */
 .options {
   list-style: none;
   padding: 0;
@@ -314,36 +313,36 @@ a-scene {
 }
 
 .options li {
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--border-radius-sm);
   padding: 16px;
   cursor: pointer;
   transition: var(--transition);
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   font-weight: 500;
 }
 
 .options li:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
   transform: translateX(4px);
 }
 
 .options li.selected {
   border-color: var(--accent-primary);
-  background: rgba(58, 134, 255, 0.15);
+  background: rgba(58, 134, 255, 0.2);
   transform: translateX(8px);
-  box-shadow: 0 4px 20px rgba(58, 134, 255, 0.3);
+  box-shadow: 0 4px 20px rgba(58, 134, 255, 0.4);
 }
 
-/* Acciones mejoradas */
+/* Acciones */
 .actions {
   display: flex;
   gap: 12px;
   justify-content: flex-end;
   margin-top: 24px;
   padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .actions button {
@@ -372,7 +371,7 @@ a-scene {
 
 .actions button.ghost {
   background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   color: var(--text-secondary);
 }
 
@@ -387,8 +386,8 @@ a-scene {
   margin-top: 20px;
   padding: 20px;
   border-radius: var(--border-radius-sm);
-  background: linear-gradient(135deg, rgba(76, 201, 240, 0.15), rgba(58, 134, 255, 0.1));
-  border: 1px solid rgba(76, 201, 240, 0.3);
+  background: linear-gradient(135deg, rgba(76, 201, 240, 0.2), rgba(58, 134, 255, 0.15));
+  border: 1px solid rgba(76, 201, 240, 0.4);
   text-align: center;
   font-weight: 600;
   font-size: 1.1rem;
@@ -409,7 +408,7 @@ a-scene {
   }
 }
 
-/* Sistema de video mejorado */
+/* Sistema de video */
 .video-wrap {
   position: relative;
   width: 100%;
@@ -428,7 +427,7 @@ a-scene {
   margin-top: 16px;
   flex-wrap: wrap;
   padding: 16px;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-sm);
 }
 
@@ -443,8 +442,8 @@ a-scene {
 
 .video-tools select,
 .video-tools input[type="range"] {
-  background: var(--bg-secondary);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
   padding: 8px 12px;
   color: var(--text-primary);
@@ -461,7 +460,7 @@ a-scene {
   max-width: 200px;
 }
 
-/* Sistema de estadísticas mejorado */
+/* Sistema de estadísticas */
 .stats-summary {
   display: flex;
   flex-wrap: wrap;
@@ -472,12 +471,13 @@ a-scene {
 .pill {
   padding: 8px 16px;
   border-radius: 20px;
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--text-primary);
   font-size: 0.85rem;
   font-weight: 600;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   transition: var(--transition);
+  backdrop-filter: blur(10px);
 }
 
 .pill:hover {
@@ -500,15 +500,16 @@ a-scene {
   color: white;
 }
 
-/* Tabla de estadísticas moderna */
+/* Tabla de estadísticas */
 .stats-table {
   width: 100%;
   border-collapse: collapse;
   margin: 16px 0;
-  background: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(10px);
 }
 
 .stats-table th,
@@ -519,7 +520,7 @@ a-scene {
 }
 
 .stats-table thead th {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   color: var(--accent-primary);
   font-weight: 600;
   font-size: 0.9rem;
@@ -528,18 +529,18 @@ a-scene {
 }
 
 .stats-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .stats-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* Barras de progreso animadas */
+/* Barras de progreso */
 .bar {
   width: 100%;
   height: 12px;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15);
   border-radius: 6px;
   overflow: hidden;
   position: relative;
@@ -583,7 +584,7 @@ a-scene {
   text-align: center;
   font-style: italic;
   padding: 12px;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: var(--border-radius-sm);
 }
 
@@ -626,12 +627,17 @@ a-scene {
     font-size: 13px;
   }
   
-  .banner,
-  .country-indicator {
+  .banner {
     font-size: 13px;
     padding: 10px 20px;
     max-width: 85%;
     text-align: center;
+  }
+  
+  .country-indicator {
+    font-size: 13px;
+    padding: 10px 20px;
+    max-width: 85%;
   }
   
   .modal-header h3 {
@@ -697,13 +703,6 @@ a-scene {
   border: 0;
 }
 
-/* Efectos de partículas para AR (opcional) */
-.ar-particle {
-  position: absolute;
-  pointer-events: none;
-  z-index: 5;
-}
-
 /* Animaciones para modelos 3D */
 .ar-model {
   animation: modelEntrance 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -718,4 +717,14 @@ a-scene {
     opacity: 1;
     transform: scale(1) translateY(0) rotateX(0);
   }
+}
+
+/* Asegurar que la cámara se vea completamente */
+.a-camera, .camera, [camera] {
+  background: transparent !important;
+}
+
+/* Eliminar cualquier overlay oscuro */
+.a-canvas, canvas {
+  background: transparent !important;
 }
