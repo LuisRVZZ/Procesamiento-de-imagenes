@@ -8,17 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
   let mindarThree = null, renderer = null, scene = null, camera = null;
   let anchor = null, model = null, running = false;
 
-  // Ajusta estas rutas EXACTAS
+  // RUTAS (ajusta si cambian nombres/carpeta)
   const TARGET_MIND = '/assets/targets/flagMexico.mind';
   const MODEL_GLTF  = '/assets/models/Mexico.glb';
 
-  // --- util: checa si el asset existe ---
-  async function assertAsset(url) {
-    const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-    if (!res.ok) throw new Error(`No se encontró: ${url} (HTTP ${res.status})`);
-  }
-
-  // --- util: “calienta” permisos de cámara (algunos navegadores lo requieren) ---
+  // (Opcional) calentar permiso de cámara. Ayuda en iOS/Android estrictos.
   async function warmUpCameraPermissions() {
     let tmp;
     try {
@@ -26,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
         video: { facingMode: { ideal: 'environment' } },
         audio: false
       });
+    } catch (e) {
+      console.warn('Warm-up getUserMedia falló (continuamos):', e.name, e.message);
     } finally {
       if (tmp) tmp.getTracks().forEach(t => t.stop());
     }
@@ -34,27 +30,34 @@ document.addEventListener('DOMContentLoaded', () => {
   async function initMindAR() {
     if (mindarThree) return;
 
-    // MUY IMPORTANTE: asegurar que la sección AR está visible
-    // (si usas showSection, entra a #ar antes de darle Activar)
+    // Aviso si el contenedor está oculto (no debe estarlo)
     const style = getComputedStyle(arView);
     if (style.display === 'none' || style.visibility === 'hidden') {
-      console.warn('El contenedor .ar-view está oculto. Asegúrate de estar en la sección AR antes de iniciar.');
+      console.warn('El contenedor .ar-view está oculto. Asegura que #ar esté activo antes de iniciar.');
     }
 
     mindarThree = new window.MINDAR.IMAGE.MindARThree({
       container: arView,
       imageTargetSrc: TARGET_MIND,
       uiLoading: 'no', uiScanning: 'yes', uiError: 'yes',
-      // Fuerza cámara trasera cuando exista:
-      video: { facingMode: { ideal: 'environment' } }
+      video: { facingMode: { ideal: 'environment' } } // trasera cuando exista
     });
 
     ({ renderer, scene, camera } = mindarThree);
 
+    // Luz básica
     scene.add(new THREE.AmbientLight(0xffffff, 1));
 
+    // Anchor al primer target (índice 0)
     anchor = mindarThree.addAnchor(0);
 
+    anchor.onTargetFound = () => { placeholder.style.display = 'none'; };
+    anchor.onTargetLost  = () => {};
+  }
+
+  // Carga el modelo DESPUÉS de que MindAR ya inició
+  function loadModelOnce() {
+    if (model) return; // ya cargado
     const loader = new THREE.GLTFLoader();
     loader.load(MODEL_GLTF, (gltf) => {
       model = gltf.scene;
@@ -68,32 +71,40 @@ document.addEventListener('DOMContentLoaded', () => {
         anchor.onRender = (dt) => mixer.update(dt);
       }
       anchor.group.add(model);
+      console.log('GLB cargado OK:', MODEL_GLTF);
     }, undefined, (err) => {
       console.error('Error cargando GLB:', err);
+      alert('El modelo GLB no pudo cargarse. Revisa ruta/nombre y consola.');
     });
-
-    anchor.onTargetFound = () => { placeholder.style.display = 'none'; };
-    anchor.onTargetLost  = () => {};
   }
 
   async function startAR() {
     try {
-      // 1) verifica assets (evita fallar luego por 404)
-      await assertAsset(TARGET_MIND);
-      await assertAsset(MODEL_GLTF);
+      // Asegura HTTPS o localhost
+      if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+        alert('Abre la versión HTTPS del sitio (Netlify).');
+        return;
+      }
 
-      // 2) “calienta” permisos (ayuda en Safari/iOS y Android estrictos)
+      // 0) Warm-up permisos (opcional pero recomendado)
       await warmUpCameraPermissions();
 
-      // 3) init + start
+      // 1) Init MindAR
       await initMindAR();
-      await mindarThree.start();
+      console.log('MindAR inicializado. Iniciando cámara...');
+      await mindarThree.start(); // si falla permisos/cámara, cae al catch
+      console.log('MindAR START OK');
 
+      // 2) Ya que arrancó, carga el modelo
+      loadModelOnce();
+
+      // 3) Estado UI
       running = true;
       startBtn.disabled = true;
       stopBtn.disabled = false;
       placeholder.style.display = 'none';
 
+      // 4) Render loop
       let last = performance.now();
       const loop = (now) => {
         if (!running) return;
@@ -102,51 +113,53 @@ document.addEventListener('DOMContentLoaded', () => {
         requestAnimationFrame(loop);
       };
       requestAnimationFrame(loop);
-    } catch (e) {
-      console.error('Fallo al iniciar AR:', e);
 
-      // Diagnóstico más claro
-      const msg = (e && e.message || '').toLowerCase();
-      if (msg.includes('no se encontró') || msg.includes('404')) {
-        alert('No se encontraron los assets (.mind o .glb). Revisa las rutas y nombres de archivo.');
-      } else if (msg.includes('permission') || msg.includes('notallowederror') || msg.includes('denied')) {
-        alert('Permiso de cámara denegado. Habilita el permiso en el navegador y vuelve a intentar.');
+    } catch (e) {
+      console.error('Fallo al iniciar AR:', e, 'name:', e.name, 'message:', e.message);
+      const msg = (e && (e.name + ' ' + e.message)).toLowerCase();
+
+      if (msg.includes('notallowederror') || msg.includes('permission') || msg.includes('denied')) {
+        alert('Permiso de cámara denegado. Actívalo en el navegador y vuelve a intentar.');
       } else if (msg.includes('notfounderror')) {
         alert('No se encontró ninguna cámara disponible.');
       } else if (msg.includes('notreadableerror') || msg.includes('trackstart')) {
         alert('La cámara está en uso por otra app/pestaña. Ciérralas e intenta de nuevo.');
-      } else if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-        alert('Debes usar HTTPS (Netlify lo tiene). Abre la versión segura del sitio.');
       } else {
-        alert('No se pudo iniciar la cámara. Revisa permisos, HTTPS y que el dispositivo tenga cámara.');
+        alert('No se pudo iniciar la cámara. Revisa permisos/HTTPS y que el dispositivo tenga cámara.');
       }
     }
   }
 
   async function stopAR() {
     if (!mindarThree) return;
-    try {
-      await mindarThree.stop();
-    } catch {}
-    try {
-      mindarThree.renderer.domElement.remove();
-    } catch {}
+    try { await mindarThree.stop(); } catch {}
+    try { mindarThree.renderer.domElement.remove(); } catch {}
     mindarThree = renderer = scene = camera = anchor = model = null;
     running = false;
     startBtn.disabled = false;
     stopBtn.disabled = true;
     placeholder.style.display = 'flex';
+    console.log('MindAR detenido');
   }
 
+  // FULLSCREEN
   fullscreenBtn.addEventListener('click', () => {
     const fsIn  = arView.requestFullscreen || arView.webkitRequestFullscreen || arView.msRequestFullscreen;
     const fsOut = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
     if (!document.fullscreenElement) fsIn?.call(arView); else fsOut?.call(document);
   });
 
-  startBtn.addEventListener('click', startAR);
+  // *** IMPORTANTE: forzar visibilidad de #ar antes de iniciar ***
+  startBtn.addEventListener('click', async () => {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.getElementById('ar').classList.add('active');
+    console.log('ar-view size:', arView.clientWidth, arView.clientHeight);
+    await startAR();
+  });
+
   stopBtn.addEventListener('click', stopAR);
 
+  // Estado inicial
   startBtn.disabled = false;
   stopBtn.disabled = true;
 });
