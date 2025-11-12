@@ -12,21 +12,47 @@ document.addEventListener('DOMContentLoaded', () => {
   let mindarThree = null, renderer = null, scene = null, camera = null;
   let anchor = null, model = null, running = false, mixer = null;
 
-  const TARGET_MIND = '/assets/targets/flagMexico.mind';
-  const MODEL_GLTF  = '/assets/models/Mexico.glb';
+  // Usa rutas RELATIVAS para Netlify/GitHub Pages
+  const TARGET_MIND = './assets/targets/flagMexico.mind';
+  const MODEL_GLTF  = './assets/models/Mexico.glb';
 
-  async function initMindAR() {
+  async function pickCameraDeviceId(){
+    // Pre-solicita permiso para poder listar devices con label
+    const tmp = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    tmp.getTracks().forEach(t => t.stop());
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const cams = devs.filter(d => d.kind === 'videoinput');
+    const back = cams.find(d => /back|rear|environment/i.test(d.label));
+    return (back || cams[0])?.deviceId || null;
+  }
+
+  async function initMindAR(deviceId = null) {
     if (mindarThree) return;
+
     mindarThree = new MindARThree({
       container: arView,
       imageTargetSrc: TARGET_MIND,
-      uiLoading: 'no', uiScanning: 'yes', uiError: 'yes'
+      uiLoading: 'no', uiScanning: 'yes', uiError: 'yes',
+      // Ayuda en Edge/móvil a elegir la cámara correcta
+      videoConfig: deviceId ? { deviceId: { exact: deviceId } } : { facingMode: 'environment' }
     });
+
     ({ renderer, scene, camera } = mindarThree);
 
+    // Three r160+: sustituye outputEncoding por outputColorSpace
+    try { renderer.outputColorSpace = THREE.SRGBColorSpace; } catch {}
+
     scene.add(new THREE.AmbientLight(0xffffff, 1));
+
     anchor = mindarThree.addAnchor(0);
-    anchor.onTargetFound = () => { placeholder.style.display = 'none'; };
+    anchor.onTargetFound = () => { 
+      placeholder.style.display = 'none'; 
+      if (mixer) mixer.timeScale = 1; 
+    };
+    anchor.onTargetLost = () => { 
+      placeholder.style.display = 'flex'; 
+      if (mixer) mixer.timeScale = 0; 
+    };
   }
 
   function loadModelOnce() {
@@ -36,11 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
       model = gltf.scene;
       model.scale.set(0.15, 0.15, 0.15);
       model.rotation.y = Math.PI;
+
       if (gltf.animations?.length) {
         mixer = new THREE.AnimationMixer(model);
-        mixer.clipAction(gltf.animations[0]).play();
+        const action = mixer.clipAction(gltf.animations[0]);
+        action.play();
         anchor.onRender = (dt) => mixer?.update(dt);
       }
+
       anchor.group.add(model);
     }, undefined, (err) => {
       console.error('[AR] Error GLB:', err);
@@ -51,14 +80,39 @@ document.addEventListener('DOMContentLoaded', () => {
   async function startAR() {
     try {
       if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
-        alert('Abre el sitio en HTTPS (Netlify).'); return;
+        alert('Abre el sitio en HTTPS (Netlify).'); 
+        return;
       }
-      // muestra la sección AR
+
+      // Muestra la sección AR
       document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
       document.getElementById('ar').classList.add('active');
 
-      await initMindAR();
-      await mindarThree.start();
+      // Selecciona dispositivo (mejora compatibilidad Edge/móvil)
+      let deviceId = null;
+      try { deviceId = await pickCameraDeviceId(); } catch {}
+
+      await initMindAR(deviceId);
+
+      // Inicia cámara y tracking
+      try { 
+        await mindarThree.start(); 
+      } catch(e){
+        console.error('mindarThree.start() falló', e);
+        if (e?.name === 'NotAllowedError') return alert('Permiso de cámara denegado.');
+        if (e?.name === 'NotFoundError')  return alert('No se encontró cámara.');
+        return alert('No se pudo iniciar la cámara. Revisa permisos o que no esté en uso por otra app.');
+      }
+
+      // Forzar tamaño del renderer tras montar el canvas
+      const resize = ()=>{
+        const w = arView.clientWidth || 640;
+        const h = arView.clientHeight || 360;
+        renderer.setSize(w, h, false);
+      };
+      resize();
+      window.addEventListener('resize', resize);
+
       loadModelOnce();
 
       running = true;
@@ -85,6 +139,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!mindarThree) return;
     try { await mindarThree.stop(); } catch {}
     try { mindarThree.renderer.domElement.remove(); } catch {}
+
+    // Limpieza opcional de recursos
+    try {
+      scene?.traverse(obj=>{
+        if (obj.geometry) obj.geometry.dispose?.();
+        if (obj.material) {
+          (Array.isArray(obj.material)?obj.material:[obj.material]).forEach(m=>{
+            m.map?.dispose?.(); m.dispose?.();
+          });
+        }
+      });
+      renderer?.dispose?.();
+    } catch {}
+
     mindarThree = renderer = scene = camera = anchor = model = mixer = null;
     running = false;
     startBtn.disabled = false;

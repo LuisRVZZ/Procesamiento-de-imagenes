@@ -332,17 +332,28 @@
     padding: 20px;
   }
   
-.ar-view {
+/* --- AR view sizing / fix --- */
+.ar-view{
   position: relative;
   width: 100%;
-  height: 400px;
-  background-color: #000;
-  border-radius: 12px;
+  aspect-ratio: 16/9;     /* O usa height: 60vh; si prefieres */
+  background: #000;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 16px;
 }
+
+/* Asegura que MindAR/Three llenen el contenedor */
+.ar-view canvas,
+.ar-view video,
+.ar-view .mindar-ui-overlay{
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#ar-video{ object-fit: cover; } /* útil para pruebas rápidas */
+
 
 .fullscreen-btn {
   position: absolute;
@@ -363,22 +374,18 @@
   background: rgba(0,0,0,0.9);
 }
   
-  .camera-placeholder {
-    text-align: center;
-    color: #fff;
-    z-index: 1;
-  }
-  
-  .camera-placeholder i {
-    font-size: 48px;
-    margin-bottom: 10px;
-    opacity: 0.7;
-  }
-  
-  .camera-placeholder p {
-    font-size: 16px;
-  }
-  
+  .camera-placeholder{
+  position: absolute;
+  inset: 0;               /* ocupa todo el .ar-view */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #fff;
+  z-index: 5;             /* por encima del canvas */
+  pointer-events: none;   /* no bloquea clicks */
+}
+
   #ar-video, #ar-canvas {
     position: absolute;
     top: 0;
