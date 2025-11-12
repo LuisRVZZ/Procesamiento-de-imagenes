@@ -2,23 +2,19 @@
 <html lang="es">
 <head>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>AR – Bandera Argelia</title>
+  <title>AR – 2 Banderas</title>
 
   <!-- A-Frame -->
   <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-
   <!-- MindAR A-Frame -->
   <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; }
-    a-scene { position: fixed; inset: 0; }
-    .banner {
-      position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-      background: rgba(0,0,0,.6); color: #fff; padding: 6px 10px;
-      border-radius: 8px; z-index: 2;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    }
+    html,body{margin:0;height:100%;overflow:hidden}
+    a-scene{position:fixed;inset:0}
+    .banner{position:fixed;top:10px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.6);color:#fff;padding:6px 10px;border-radius:8px;z-index:2;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
   </style>
 </head>
 <body>
@@ -26,9 +22,7 @@
 
   <a-scene
     id="scene"
-    mindar-image="
-      imageTargetSrc: /assets/targets/flagarabia-saudita.mind;
-    "
+    mindar-image="imageTargetSrc: /assets/targets/dosbanderas.mind?v=1;"
     color-space="sRGB"
     renderer="colorManagement: true, physicallyCorrectLights"
     vr-mode-ui="enabled:false"
@@ -37,8 +31,9 @@
     loading-screen="enabled:true">
 
     <a-assets>
-      <!-- Imagen que se mostrará encima del marcador -->
-      <img id="foto-argelia" src="/assets/targets/arabia-saudita.jpg" />
+      <!-- Reemplaza con tus banderas -->
+      <img id="flagA" src="/assets/targets/arabia-saudita.jpg" />
+      <img id="flagB" src="/assets/targets/Argelia.png" />
     </a-assets>
 
     <!-- Luces -->
@@ -48,17 +43,29 @@
     <!-- Cámara -->
     <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
 
-    <!-- Único marcador: bandera de Argelia -->
+    <!-- Target 0 (PAÍS A) -->
     <a-entity mindar-image-target="targetIndex: 0">
-      <a-image src="#foto-argelia" position="0 0 0.12" width="1" height="0.6"
+      <a-image src="#flagA" position="0 0 0.12" width="1" height="0.6"
                material="side:double"
                animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate">
       </a-image>
 
-      <a-entity id="label-argelia" position="0 -0.55 0.12" visible="false" scale="0 0 0">
-        <a-plane width="0.9" height="0.18"
-                 material="color:#111; opacity:0.65; transparent:true; side:double"></a-plane>
-        <a-entity text="value: ARGELIA; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+      <a-entity id="label-a" position="0 -0.55 0.12" visible="false" scale="0 0 0">
+        <a-plane width="0.9" height="0.18" material="color:#111; opacity:0.65; transparent:true; side:double"></a-plane>
+        <a-entity text="value: PAÍS A; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
+      </a-entity>
+    </a-entity>
+
+    <!-- Target 1 (PAÍS B) -->
+    <a-entity mindar-image-target="targetIndex: 1">
+      <a-image src="#flagB" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
+               animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate">
+      </a-image>
+
+      <a-entity id="label-b" position="0 -0.55 0.12" visible="false" scale="0 0 0">
+        <a-plane width="0.9" height="0.18" material="color:#111; opacity:0.65; transparent:true; side:double"></a-plane>
+        <a-entity text="value: PAÍS B; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
       </a-entity>
     </a-entity>
 
@@ -72,28 +79,31 @@
       {property:'scale', to:`${to} ${to} ${to}`, dur, easing:'easeOutCubic'});
 
     scene.addEventListener('arReady', ()=>{
-      status.textContent = 'Listo. Apunta al marcador de Argelia.';
+      status.textContent = 'Listo. Apunta a cualquiera de los dos marcadores.';
     });
 
     scene.addEventListener('arError', ()=>{
       status.textContent = 'Error de cámara/HTTPS/privacidad.';
     });
 
-    const label = document.getElementById('label-argelia');
-    const anchor = document.querySelector('[mindar-image-target]');
+    const showLabel = (el)=>{ el.setAttribute('visible','true'); pop(el,1,220); };
+    const hideLabel = (el)=>{ pop(el,0,180); setTimeout(()=> el.setAttribute('visible','false'), 190); };
 
-    anchor.addEventListener('targetFound', ()=>{
-      status.style.display = 'none';
-      label.setAttribute('visible','true');
-      pop(label,1,220);
+    // Suscribir ambos anchors
+    document.querySelectorAll('[mindar-image-target]').forEach(anchor=>{
+      const label = anchor.querySelector('[id^="label-"]');
+      anchor.addEventListener('targetFound', ()=>{
+        status.style.display = 'none';
+        if (label) showLabel(label);
+      });
+      anchor.addEventListener('targetLost', ()=>{
+        status.style.display = 'block';
+        status.textContent = 'No veo el marcador. Vuelve a apuntar.';
+        if (label) hideLabel(label);
+      });
     });
 
-    anchor.addEventListener('targetLost', ()=>{
-      status.style.display = 'block';
-      status.textContent = 'No veo el marcador. Vuelve a apuntar.';
-      pop(label,0,180);
-      setTimeout(()=> label.setAttribute('visible','false'), 190);
-    });
+    window.addEventListener('load', ()=>{ status.style.display = 'block'; });
   </script>
 </body>
 </html>
