@@ -1,9 +1,11 @@
+/* ====== DOM base ====== */
 const scene   = document.getElementById('scene');
 const status  = document.getElementById('status');
 const root    = document.getElementById('anchors-root');
 const btnAnim = document.getElementById('btnAnim');
 const toolbar = document.getElementById('toolbar');
 
+/* ====== Trivia ====== */
 const btnTrivia     = document.getElementById('btnTrivia');
 const triviaModal   = document.getElementById('triviaModal');
 const triviaClose   = document.getElementById('triviaClose');
@@ -15,22 +17,33 @@ const triviaNext    = document.getElementById('triviaNext');
 const triviaFinish  = document.getElementById('triviaFinish');
 const triviaResult  = document.getElementById('triviaResult');
 
-/* === VIDEO (YouTube) === */
+/* ====== Video (YouTube) ====== */
 const btnVideo     = document.getElementById('btnVideo');
 const videoModal   = document.getElementById('videoModal');
 const videoClose   = document.getElementById('videoClose');
 const videoCountry = document.getElementById('videoCountry');
 const ytFrame      = document.getElementById('ytFrame');
 
-/* === Filtros de video (select + slider) === */
+/* Filtros de video */
 const videoFilter           = document.getElementById('videoFilter');
 const videoFilterAmount     = document.getElementById('videoFilterAmount');
 const videoFilterAmountWrap = document.getElementById('videoFilterAmountWrap');
 
+/* ====== Estadísticas ====== */
+const btnStats     = document.getElementById('btnStats');
+const statsModal   = document.getElementById('statsModal');
+const statsClose   = document.getElementById('statsClose');
+const statsCloseBtn= document.getElementById('statsCloseBtn');
+const statsCountry = document.getElementById('statsCountry');
+const statsSummary = document.getElementById('statsSummary');
+const statsTable   = document.getElementById('statsTable')?.querySelector('tbody');
+const statsNote    = document.getElementById('statsNote');
+const statsRefresh = document.getElementById('statsRefresh');
+
 let currentTargetIndex = null;
 let currentCountryLabel = null;
 
-/* ===== Defaults globales ===== */
+/* ===== Defaults globales (modelos) ===== */
 const DEFAULT_MODEL_SCALE = 0.10;
 const DEFAULT_MODEL_POSX  = 0.73;
 const DEFAULT_MODEL_POSY  = 0.01;
@@ -63,7 +76,7 @@ const MAP = [
   { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',      tx:{ scale:0.57 } }
 ];
 
-/* ===== Banco de preguntas (1 por país, label EXACTO con MAP) ===== */
+/* ===== Banco de preguntas (label EXACTO con MAP) ===== */
 const QUESTION_BANK = {
   'ARABIA SAUDITA': { q:'Capital de Arabia Saudita:', options:['Riad','Jeddah','La Meca','Medina'], answer:0 },
   'ARGELIA': { q:'Continente al que pertenece Argelia:', options:['Asia','África','Europa','Oceanía'], answer:1 },
@@ -132,10 +145,7 @@ function addImage(anchor, imgId) {
   img.setAttribute('width', '1');
   img.setAttribute('height', '0.6');
   img.setAttribute('material', 'side: double');
-  img.setAttribute(
-    'animation__flag',
-    'property: position; to: 0 0.06 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate'
-  );
+  img.setAttribute('animation__flag','property: position; to: 0 0.06 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate');
   anchor.appendChild(img);
   flagsList.push(img);
 }
@@ -146,45 +156,31 @@ function applyPresetAnimations(modelId, el, posX, posY, posZ, scale) {
   const slow = 1600, fast = 700;
 
   if (modelId === 'mdlBalon') {
-    el.setAttribute('animation__bounce',
-      `property: position; to: ${posX} ${posY + 0.12} ${posZ}; dur:${fast}; easing:easeInOutCubic; loop:true; dir:alternate`);
-    el.setAttribute('animation__spin',
-      'property: rotation; to: 0 360 0; dur:4000; easing:linear; loop:true');
+    el.setAttribute('animation__bounce', `property: position; to: ${posX} ${posY + 0.12} ${posZ}; dur:${fast}; easing:easeInOutCubic; loop:true; dir:alternate`);
+    el.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur:4000; easing:linear; loop:true');
   }
   else if (modelId === 'mdlCopa') {
-    el.setAttribute('animation__float',
-      `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
-    el.setAttribute('animation__spin',
-      'property: rotation; to: 0 360 0; dur:8000; easing:linear; loop:true');
+    el.setAttribute('animation__float', `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur:8000; easing:linear; loop:true');
   }
   else if (modelId === 'mdlBote') {
-    el.setAttribute('animation__sway',
-      'property: rotation; to: 0 0 8; dur:1800; easing:easeInOutSine; loop:true; dir:alternate');
-    el.setAttribute('animation__float',
-      `property: position; to: ${posX} ${posY + bob} ${posZ}; dur:1800; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute('animation__sway', 'property: rotation; to: 0 0 8; dur:1800; easing:easeInOutSine; loop:true; dir:alternate');
+    el.setAttribute('animation__float', `property: position; to: ${posX} ${posY + bob} ${posZ}; dur:1800; easing:easeInOutSine; loop:true; dir:alternate`);
   }
   else if (modelId === 'mdlDonut') {
-    el.setAttribute('animation__spin',
-      'property: rotation; to: 0 360 0; dur:5000; easing:linear; loop:true');
-    el.setAttribute('animation__bob',
-      `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur:5000; easing:linear; loop:true');
+    el.setAttribute('animation__bob', `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
   }
   else if (modelId === 'mdlCoffee') {
-    el.setAttribute('animation__wobble',
-      'property: rotation; to: 4 0 -4; dur:1200; easing:easeInOutSine; loop:true; dir:alternate');
-    el.setAttribute('animation__bob',
-      `property: position; to: ${posX} ${posY + bob/3} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute('animation__wobble', 'property: rotation; to: 4 0 -4; dur:1200; easing:easeInOutSine; loop:true; dir:alternate');
+    el.setAttribute('animation__bob', `property: position; to: ${posX} ${posY + bob/3} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
   }
   else if (/^mdl(Arabia|Argentina|USA|Canada|Corea|Japon|Mexico)$/.test(modelId)) {
-    el.setAttribute('animation__hover',
-      `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
-    el.setAttribute('animation__tilt',
-      'property: rotation; to: 0 15 0; dur:1800; easing:easeInOutSine; loop:true; dir:alternate');
+    el.setAttribute('animation__hover', `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute('animation__tilt', 'property: rotation; to: 0 15 0; dur:1800; easing:easeInOutSine; loop:true; dir:alternate');
   } else {
-    el.setAttribute('animation__bob',
-      `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
-    el.setAttribute('animation__spin',
-      'property: rotation; to: 0 360 0; dur:7000; easing:linear; loop:true');
+    el.setAttribute('animation__bob', `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur:7000; easing:linear; loop:true');
   }
 }
 
@@ -205,11 +201,8 @@ function addModel(anchor, modelId, tx = {}) {
   el.setAttribute('position', `${posX} ${posY} ${posZ}`);
   el.setAttribute('rotation', `0 ${rotY} 0`);
   el.setAttribute('scale', `${scale} ${scale} ${scale}`);
+  el.setAttribute('animation-mixer', 'timeScale: 1'); // clips internos si existen
 
-  // Clips internos del GLB (si existen)
-  el.setAttribute('animation-mixer', 'timeScale: 1');
-
-  // Preset de animaciones
   applyPresetAnimations(modelId, el, posX, posY, posZ, scale);
 
   anchor.appendChild(el);
@@ -231,7 +224,7 @@ function setAnimationsPlaying(playing) {
     }
   });
 
-  // Banderas: pausar / reanudar animation__flag
+  // Banderas: pausar / reanudar
   flagsList.forEach(img => {
     const comp = img.components['animation__flag'];
     if (comp) playing ? comp.play() : comp.pause();
@@ -275,8 +268,6 @@ function closeModal() {
   triviaModal.classList.add('hidden');
   triviaModal.setAttribute('aria-hidden', 'true');
 }
-
-/* Lanza trivia global (5 países aleatorios, incluyendo el detectado si existe) */
 function startGlobalTrivia(includeCurrent = true) {
   const labels = Object.keys(QUESTION_BANK);
   if (labels.length === 0) {
@@ -290,14 +281,10 @@ function startGlobalTrivia(includeCurrent = true) {
     const item = QUESTION_BANK[country];
     return { country, q: item.q, options: item.options, answer: item.answer };
   });
-  trivia.index = 0;
-  trivia.score = 0;
-  trivia.selected = null;
-
+  trivia.index = 0; trivia.score = 0; trivia.selected = null;
   renderTriviaQuestion();
   openModal();
 }
-
 function renderTriviaQuestion() {
   const total = trivia.pool.length;
   const i = trivia.index;
@@ -332,15 +319,13 @@ function renderTriviaQuestion() {
     triviaFinish.classList.add('hidden');
   }
 }
-
 function gradeCurrent() {
   const item = trivia.pool[trivia.index];
   if (trivia.selected === item.answer) trivia.score += 1;
 }
 
-/* ===== FILTROS DE VIDEO (CSS filter) ===== */
+/* ===== Filtros de VIDEO (CSS filter) ===== */
 function buildCssFilter(type, amount) {
-  // amount: 0–200 (100 neutro), salvo 'hue' (0–360) y 'blur' (0–10px)
   switch (type) {
     case 'none':       return 'none';
     case 'grayscale':  return `grayscale(${amount/100})`;
@@ -357,14 +342,11 @@ function buildCssFilter(type, amount) {
 function applyCurrentFilter() {
   if (!ytFrame) return;
   const type = videoFilter?.value || 'none';
-
-  // Ajustar tope del slider por tipo
   if (type === 'hue') videoFilterAmount.max = 360;
   else                videoFilterAmount.max = 200;
 
   const amount = parseInt(videoFilterAmount?.value ?? '100', 10);
   const css = buildCssFilter(type, amount);
-
   ytFrame.style.filter = css;
   ytFrame.style.webkitFilter = css;
 }
@@ -373,14 +355,11 @@ function resetVideoFilter() {
   ytFrame.style.filter = 'none';
   ytFrame.style.webkitFilter = 'none';
   if (videoFilter) videoFilter.value = 'none';
-  if (videoFilterAmount) {
-    videoFilterAmount.max = 200;
-    videoFilterAmount.value = 100;
-  }
+  if (videoFilterAmount) { videoFilterAmount.max = 200; videoFilterAmount.value = 100; }
   if (videoFilterAmountWrap) videoFilterAmountWrap.style.display = 'none';
 }
 
-/* ===== VIDEO (YouTube) ===== */
+/* ===== Video (YouTube) ===== */
 function openYouTubeForCountry(countryLabel) {
   const id = YT_BANK[countryLabel];
   if (!id) { alert('Aún no hay video para este país.'); return; }
@@ -390,7 +369,7 @@ function openYouTubeForCountry(countryLabel) {
   const params = new URLSearchParams({
     autoplay: '1',
     mute: '1',          // autoplay en móviles
-    playsinline: '1',   // evita fullscreen forzado en iOS
+    playsinline: '1',   // evita fullscreen en iOS
     rel: '0',
     modestbranding: '1',
     controls: '1'
@@ -407,6 +386,90 @@ function closeYouTubeModal() {
   videoModal.setAttribute('aria-hidden', 'true');
   ytFrame.src = ''; // detiene el video
   resetVideoFilter();
+}
+
+/* ===== Estadísticas ===== */
+const STATS_BANK = {
+  'JAPÓN': { fifaRank:18, form:['W','W','D','L','W'], goalsFor:8, goalsAgainst:3, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo (amigables 2025).' },
+  'MÉXICO': { fifaRank:12, form:['W','D','W','W','L'], goalsFor:7, goalsAgainst:4, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo (Ciclo 2025).' },
+  'ARGENTINA': { fifaRank:1, form:['W','W','W','W','W'], goalsFor:10, goalsAgainst:1, matches:5, wins:5, draws:0, losses:0, note:'Datos de ejemplo.' },
+  'ESTADOS UNIDOS': { fifaRank:11, form:['D','W','L','W','D'], goalsFor:6, goalsAgainst:5, matches:5, wins:2, draws:2, losses:1, note:'Datos de ejemplo.' },
+  'COLOMBIA': { fifaRank:13, form:['W','W','W','D','W'], goalsFor:9, goalsAgainst:2, matches:5, wins:4, draws:1, losses:0, note:'Datos de ejemplo.' },
+  'BRASIL': { fifaRank:5, form:['W','L','W','D','W'], goalsFor:9, goalsAgainst:4, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'URUGUAY': { fifaRank:9, form:['W','W','D','L','W'], goalsFor:7, goalsAgainst:3, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'INGLATERRA': { fifaRank:4, form:['W','D','W','W','D'], goalsFor:8, goalsAgainst:2, matches:5, wins:3, draws:2, losses:0, note:'Datos de ejemplo.' },
+  'COREA DEL SUR': { fifaRank:23, form:['W','D','L','W','D'], goalsFor:5, goalsAgainst:4, matches:5, wins:2, draws:2, losses:1, note:'Datos de ejemplo.' },
+  'ECUADOR': { fifaRank:30, form:['W','W','L','D','W'], goalsFor:6, goalsAgainst:3, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'PARAGUAY': { fifaRank:48, form:['D','L','W','D','L'], goalsFor:3, goalsAgainst:5, matches:5, wins:1, draws:2, losses:2, note:'Datos de ejemplo.' },
+  'SENEGAL': { fifaRank:17, form:['W','W','D','W','L'], goalsFor:7, goalsAgainst:3, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'COSTA DE MARFIL': { fifaRank:38, form:['W','W','L','W','D'], goalsFor:6, goalsAgainst:4, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'AUSTRALIA': { fifaRank:24, form:['W','D','W','L','W'], goalsFor:6, goalsAgainst:4, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'CANADÁ': { fifaRank:45, form:['W','L','D','W','D'], goalsFor:5, goalsAgainst:5, matches:5, wins:2, draws:2, losses:1, note:'Datos de ejemplo.' },
+  'ARABIA SAUDITA': { fifaRank:53, form:['D','W','L','W','D'], goalsFor:5, goalsAgainst:5, matches:5, wins:2, draws:2, losses:1, note:'Datos de ejemplo.' },
+  'IRÁN': { fifaRank:21, form:['W','W','D','W','L'], goalsFor:7, goalsAgainst:3, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'JORDANIA': { fifaRank:70, form:['W','D','W','L','D'], goalsFor:4, goalsAgainst:4, matches:5, wins:2, draws:2, losses:1, note:'Datos de ejemplo.' },
+  'CABO VERDE': { fifaRank:65, form:['W','W','L','D','W'], goalsFor:6, goalsAgainst:4, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'ARGELIA': { fifaRank:44, form:['L','W','W','D','W'], goalsFor:6, goalsAgainst:4, matches:5, wins:3, draws:1, losses:1, note:'Datos de ejemplo.' },
+  'SUDÁFRICA': { fifaRank:59, form:['D','W','D','L','W'], goalsFor:5, goalsAgainst:5, matches:5, wins:2, draws:2, losses:1, note:'Datos de ejemplo.' }
+};
+
+function defaultStats(label){
+  return { fifaRank:'—', form:[], goalsFor:0, goalsAgainst:0, matches:0, wins:0, draws:0, losses:0, note:'Sin datos cargados aún.' };
+}
+function computeMaxes() {
+  let maxGF = 1, maxGA = 1, maxMatches = 1;
+  Object.values(STATS_BANK).forEach(s => {
+    if (!s) return;
+    maxGF = Math.max(maxGF, s.goalsFor || 0);
+    maxGA = Math.max(maxGA, s.goalsAgainst || 0);
+    maxMatches = Math.max(maxMatches, s.matches || 0);
+  });
+  return { maxGF, maxGA, maxMatches };
+}
+function bar(widthPct){
+  const w = Math.max(0, Math.min(100, widthPct));
+  return `<div class="bar"><span class="bar-fill" style="width:${w}%"></span></div>`;
+}
+function renderSummary(s){
+  const rank = (s.fifaRank ?? '—');
+  const form = (s.form && s.form.length) ? s.form.join(' ') : '—';
+  const formClass = (s.form?.filter(x => x==='W').length ?? 0) >= 3 ? 'pill green' : 'pill';
+  return `
+    <div class="pill">Ranking FIFA: ${rank}</div>
+    <div class="${formClass}">Racha: ${form}</div>
+    <div class="pill">PJ: ${s.matches ?? 0}</div>
+    <div class="pill">W: ${s.wins ?? 0}</div>
+    <div class="pill">D: ${s.draws ?? 0}</div>
+    <div class="pill">L: ${s.losses ?? 0}</div>
+  `;
+}
+function renderRows(s, maxes){
+  const rows = [
+    { label:'Goles a favor',   val:s.goalsFor ?? 0,    pct: (s.goalsFor ?? 0)    * 100 / (maxes.maxGF || 1) },
+    { label:'Goles en contra', val:s.goalsAgainst ?? 0,pct: (s.goalsAgainst ?? 0)* 100 / (maxes.maxGA || 1) },
+    { label:'Partidos jugados',val:s.matches ?? 0,     pct: (s.matches ?? 0)     * 100 / (maxes.maxMatches || 1) }
+  ];
+  return rows.map(r => `
+    <tr>
+      <td>${r.label}</td>
+      <td>${r.val}</td>
+      <td>${bar(r.pct)}</td>
+    </tr>
+  `).join('');
+}
+function openStatsForCountry(countryLabel){
+  const stats = STATS_BANK[countryLabel] ?? defaultStats(countryLabel);
+  const maxes = computeMaxes();
+  statsCountry.textContent = `País: ${countryLabel}`;
+  statsSummary.innerHTML = renderSummary(stats);
+  if (statsTable) statsTable.innerHTML = renderRows(stats, maxes);
+  statsNote.textContent = stats.note || '';
+  statsModal.classList.remove('hidden');
+  statsModal.setAttribute('aria-hidden','false');
+}
+function closeStatsModal(){
+  statsModal.classList.add('hidden');
+  statsModal.setAttribute('aria-hidden','true');
 }
 
 /* ===== Construcción de anchors ===== */
@@ -440,16 +503,18 @@ function buildAnchors() {
 
     anchor.appendChild(label);
 
-    // eventos
+    // eventos AR
     anchor.addEventListener('targetFound', () => {
       console.log(`✅ targetFound index=${i} (${cfg.label}) | modelId=${cfg.modelId}`);
       status.style.display = 'none';
       if (toolbar) toolbar.style.display = 'flex';
-      // Guardar país activo y mostrar botones
+
       currentTargetIndex = i;
       currentCountryLabel = cfg.label;
+
       if (btnTrivia) btnTrivia.style.display = 'inline-block';
       if (btnVideo)  btnVideo.style.display  = 'inline-block';
+      if (btnStats)  btnStats.style.display  = 'inline-block';
 
       label.setAttribute('visible', 'true');
       pop(label, 1, 220);
@@ -460,15 +525,17 @@ function buildAnchors() {
       status.textContent = 'No veo el marcador. Vuelve a apuntar.';
       if (toolbar) toolbar.style.display = 'none';
 
-      // Limpiar país y ocultar botones
       currentTargetIndex = null;
       currentCountryLabel = null;
+
       if (btnTrivia) btnTrivia.style.display = 'none';
       if (btnVideo)  btnVideo.style.display  = 'none';
+      if (btnStats)  btnStats.style.display  = 'none';
 
-      // (Opcional) cerrar modales al perder target
+      // (opcional) cerrar modales al perder target
       // closeModal();
       // closeYouTubeModal();
+      // closeStatsModal();
 
       pop(label, 0, 180);
       setTimeout(() => label.setAttribute('visible', 'false'), 190);
@@ -498,10 +565,7 @@ if (btnAnim) {
 
 /* ===== Trivia: listeners ===== */
 if (btnTrivia) {
-  btnTrivia.addEventListener('click', () => {
-    // true: garantiza incluir el país detectado dentro de las 5 preguntas (si hay uno)
-    startGlobalTrivia(true);
-  });
+  btnTrivia.addEventListener('click', () => startGlobalTrivia(true));
 }
 if (triviaClose) triviaClose.addEventListener('click', closeModal);
 if (triviaModal) {
@@ -548,23 +612,42 @@ if (videoModal) {
     if (e.target.dataset.close === 'true') closeYouTubeModal();
   });
 }
-
-/* ===== Filtros: listeners ===== */
+/* Filtros: listeners */
 if (videoFilter) {
   videoFilter.addEventListener('change', () => {
     const t = videoFilter.value;
-
-    // Mostrar/ocultar slider por tipo de filtro
     videoFilterAmountWrap.style.display = (t === 'none') ? 'none' : 'inline-flex';
-
-    // Defaults útiles por filtro
-    if (t === 'hue')        videoFilterAmount.value = 180; // medio tono
-    else if (t === 'blur')  videoFilterAmount.value = 40;  // ~2px
-    else                    videoFilterAmount.value = 100; // neutro
-
+    if (t === 'hue')       videoFilterAmount.value = 180; // medio tono
+    else if (t === 'blur') videoFilterAmount.value = 40;  // ~2px
+    else                   videoFilterAmount.value = 100; // neutro
     applyCurrentFilter();
   });
 }
 if (videoFilterAmount) {
   videoFilterAmount.addEventListener('input', applyCurrentFilter);
+}
+
+/* ===== Estadísticas: listeners ===== */
+if (btnStats){
+  btnStats.addEventListener('click', () => {
+    if (!currentCountryLabel){
+      alert('Escanea una bandera para ver estadísticas de ese país.');
+      return;
+    }
+    openStatsForCountry(currentCountryLabel);
+  });
+}
+if (statsClose)    statsClose.addEventListener('click', closeStatsModal);
+if (statsCloseBtn) statsCloseBtn.addEventListener('click', closeStatsModal);
+if (statsModal){
+  statsModal.addEventListener('click', (e)=>{
+    if (e.target.dataset.close === 'true') closeStatsModal();
+  });
+}
+if (statsRefresh){
+  statsRefresh.addEventListener('click', ()=>{
+    if (!currentCountryLabel) return;
+    // Aquí podrías re-consultar o re-generar datos. Por ahora solo re-render:
+    openStatsForCountry(currentCountryLabel);
+  });
 }

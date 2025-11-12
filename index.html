@@ -19,6 +19,7 @@
     <button id="btnAnim">⏸️ Pausar animación</button>
     <button id="btnTrivia" style="display:none">❓ Trivia</button>
     <button id="btnVideo"  style="display:none">🎬 Video</button>
+    <button id="btnStats"  style="display:none">📊 Estadísticas</button>
   </div>
 
   <!-- Escena principal -->
@@ -127,7 +128,7 @@
                   style="width:100%; height:100%; border-radius:10px;"></iframe>
         </div>
 
-        <!-- ===== Controles de filtro (rápido y simple) ===== -->
+        <!-- Controles de filtro (rápido y simple) -->
         <div class="video-tools">
           <label>
             Filtro:
@@ -149,10 +150,68 @@
             <input id="videoFilterAmount" type="range" min="0" max="200" value="100" />
           </label>
         </div>
-        <!-- ================================================ -->
       </div>
     </div>
   </div>
+
+  <!-- Modal de Estadísticas -->
+  <div id="statsModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" data-close="true"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="statsTitle">
+      <div class="modal-header">
+        <h3 id="statsTitle">Estadísticas del país</h3>
+        <button class="close" id="statsClose" aria-label="Cerrar">✖</button>
+      </div>
+
+      <div class="modal-body">
+        <div id="statsCountry" class="country">País: —</div>
+
+        <!-- Resumen arriba (puedes poner aquí últimos 5, ranking, etc.) -->
+        <div id="statsSummary" class="stats-summary">
+          <!-- Se llena desde JS -->
+          <!-- Ejemplo visual:
+          <div class="pill">Ranking FIFA: 12</div>
+          <div class="pill green">Racha (últimos 5): W W D L W</div>
+          -->
+        </div>
+
+        <!-- Tabla de métricas principales -->
+        <table class="stats-table" id="statsTable" aria-label="Tabla de estadísticas">
+          <thead>
+            <tr>
+              <th>Métrica</th>
+              <th>Valor</th>
+              <th style="width:45%">Comparativa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Filas de ejemplo (se reemplazan desde JS) -->
+            <!--
+            <tr>
+              <td>Goles</td>
+              <td>8</td>
+              <td>
+                <div class="bar"><span class="bar-fill" style="width: 65%"></span></div>
+              </td>
+            </tr>
+            -->
+          </tbody>
+        </table>
+
+        <!-- Nota/foot -->
+        <div class="stats-note" id="statsNote">
+          <!-- Mensaje opcional (ej: “Datos del ciclo 2022–2026” ) -->
+        </div>
+
+        <!-- Acciones -->
+        <div class="actions">
+          <button id="statsRefresh" class="ghost">🔄 Actualizar</button>
+          <button id="statsCloseBtn">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Fin Modal de Estadísticas -->
 
   <script src="./js/app.js" defer></script>
 </body>
