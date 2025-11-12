@@ -14,29 +14,30 @@ const RANDOM_PER_TARGET   = false; // aleatorio entre modelos candidatos
 // models: candidatos por orden de preferencia (IDs de <a-asset-item>)
 // tx: { scale, rotY, posY } si ese país requiere ajuste especial
 const MAP = [
-  { imgId: 'flag0',  label: 'ARABIA SAUDITA',  models: ['mdlArabia','mdlCopa','mdlBalon'], tx: { scale: 0.24, posY: 0.06 } },
-  { imgId: 'flag1',  label: 'ARGELIA',         models: ['mdlBalon','mdlCopa','mdlDonut'] },
-  { imgId: 'flag2',  label: 'ARGENTINA',       models: ['mdlArgentina','mdlBalon','mdlCopa'], tx: { scale: 0.24, rotY: -15 } },
-  { imgId: 'flag3',  label: 'AUSTRALIA',       models: ['mdlBalon','mdlCopa','mdlDonut'] },
-  { imgId: 'flag4',  label: 'BRASIL',          models: ['mdlBalon','mdlCopa'] },
-  { imgId: 'flag5',  label: 'CABO VERDE',      models: ['mdlBalon','mdlBote'], tx: { scale: 0.20 } },
-  { imgId: 'flag6',  label: 'CANADÁ',          models: ['mdlCanada','mdlCoffee','mdlBalon'], tx: { scale: 0.22, rotY: 15 } },
-  { imgId: 'flag7',  label: 'CATAR',           models: ['mdlCopa','mdlBalon','mdlCoffee'] },
-  { imgId: 'flag8',  label: 'COLOMBIA',        models: ['mdlBalon','mdlCopa'] },
-  { imgId: 'flag9',  label: 'COREA DEL SUR',   models: ['mdlCorea','mdlCoffee','mdlBalon'] },
-  { imgId: 'flag10', label: 'COSTA DE MARFIL', models: ['mdlBalon','mdlCopa'] },
-  { imgId: 'flag11', label: 'ECUADOR',         models: ['mdlBalon','mdlCopa'] },
-  { imgId: 'flag12', label: 'ESTADOS UNIDOS',  models: ['mdlUSA','mdlCheese','mdlCoffee'], tx: { scale: 0.23 } },
-  { imgId: 'flag13', label: 'INGLATERRA',      models: ['mdlCoffee','mdlBalon','mdlCopa'] },
-  { imgId: 'flag14', label: 'IRÁN',            models: ['mdlBalon','mdlCopa'] },
-  { imgId: 'flag15', label: 'JAPÓN',           models: ['mdlJapon','mdlDonut','mdlCoffee'], tx: { scale: 0.20 } },
-  { imgId: 'flag16', label: 'JORDANIA',        models: ['mdlBalon','mdlCopa'] },
-  { imgId: 'flag17', label: 'MÉXICO',          models: ['mdlMexico','mdlCopa','mdlBalon'],  tx: { scale: 0.24, rotY: 20 } },
-  { imgId: 'flag18', label: 'PARAGUAY',        models: ['mdlBalon','mdlCopa'] },
-  { imgId: 'flag19', label: 'SENEGAL',         models: ['mdlBalon','mdlBote'],              tx: { scale: 0.20 } },
-  { imgId: 'flag20', label: 'SUDÁFRICA',       models: ['mdlBalon','mdlCopa'] },
-  { imgId: 'flag21', label: 'URUGUAY',         models: ['mdlBalon','mdlCopa'] },
+  { imgId:'flag0',  label:'ARABIA SAUDITA',  modelId:'mdlArabia',  tx:{ scale:0.18, posY:0.05, rotY:0 } },
+  { imgId:'flag1',  label:'ARGELIA',         modelId:'mdlCoffee',  tx:{ scale:0.16, posY:0.04, rotY:10 } },
+  { imgId:'flag2',  label:'ARGENTINA',       modelId:'mdlArgentina',tx:{ scale:0.18, posY:0.05, rotY:-15 } },
+  { imgId:'flag3',  label:'AUSTRALIA',       modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag4',  label:'BRASIL',          modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag5',  label:'CABO VERDE',      modelId:'mdlBote',     tx:{ scale:0.15, posY:0.04, rotY:0 } },
+  { imgId:'flag6',  label:'CANADÁ',          modelId:'mdlCanada',   tx:{ scale:0.18, posY:0.05, rotY:15 } },
+  { imgId:'flag7',  label:'CATAR',           modelId:'mdlDonut',    tx:{ scale:0.16, posY:0.04, rotY:0 } },   // 🍩 como pediste “comida”
+  { imgId:'flag8',  label:'COLOMBIA',        modelId:'mdlCoffee',   tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag9',  label:'COREA DEL SUR',   modelId:'mdlCorea',    tx:{ scale:0.18, posY:0.05, rotY:0 } },
+  { imgId:'flag10', label:'COSTA DE MARFIL', modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag11', label:'ECUADOR',         modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag12', label:'ESTADOS UNIDOS',  modelId:'mdlCheese',   tx:{ scale:0.18, posY:0.05, rotY:0 } },   // 🍔
+  { imgId:'flag13', label:'INGLATERRA',      modelId:'mdlCoffee',   tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag14', label:'IRÁN',            modelId:'mdlDonut',   tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag15', label:'JAPÓN',           modelId:'mdlJapon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag16', label:'JORDANIA',        modelId:'mdlCheese',   tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag17', label:'MÉXICO',          modelId:'mdlMexico',   tx:{ scale:0.18, posY:0.05, rotY:20 } },
+  { imgId:'flag18', label:'PARAGUAY',        modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },
+  { imgId:'flag19', label:'SENEGAL',         modelId:'mdlBote',     tx:{ scale:0.15, posY:0.04, rotY:0 } },
+  { imgId:'flag20', label:'SUDÁFRICA',       modelId:'mdlBalon',    tx:{ scale:0.16, posY:0.04, rotY:0 } },   // ⚽ como mencionaste
+  { imgId:'flag21', label:'URUGUAY',         modelId:'mdlCopa',     tx:{ scale:0.16, posY:0.04, rotY:0 } }
 ];
+
 
 // ===== Helpers =====
 const pop = (el, to, dur = 240) =>
