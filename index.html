@@ -1,91 +1,102 @@
 <!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AR Mundial – 2 banderas</title>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AR – México (1 bandera)</title>
 
-    <!-- A-Frame + MindAR -->
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <!-- A-Frame -->
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 
-    <style>
-      html, body { margin:0; height:100%; overflow:hidden; }
-      a-scene { position:fixed; inset:0; }
-      .banner {
-        position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
-        background: rgba(0,0,0,.6); color: #fff; padding: 6px 10px;
-        border-radius: 8px; z-index: 2; font-family: system-ui, sans-serif;
-      }
-    </style>
-    <link rel="stylesheet" href="./css/Ar.css" />
-  </head>
-  <body>
-    <div id="status" class="banner">Apunta la cámara al marcador…</div>
+  <!-- MindAR A-Frame (si Edge/Safari bloquea el CDN, ver nota 3 abajo) -->
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
 
-    <a-scene
-      id="scene"
-      mindar-image="imageTargetSrc: ./assets/targets/dosbanderas.mind;"
-      color-space="sRGB"
-      renderer="colorManagement: true, physicallyCorrectLights"
-      vr-mode-ui="enabled: false"
-      device-orientation-permission-ui="enabled: false"
-      embedded
-      loading-screen="enabled: true">
+  <style>
+    html,body{margin:0;height:100%;overflow:hidden}
+    a-scene{position:fixed;inset:0}
+    .banner{position:fixed;top:10px;left:50%;transform:translateX(-50%);
+      background:rgba(0,0,0,.6);color:#fff;padding:6px 10px;border-radius:8px;z-index:2;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
+  </style>
+</head>
+<body>
+  <div id="status" class="banner">Cargando…</div>
 
-      <!-- Assets: SOLO las dos imágenes que vas a mostrar -->
-      <a-assets>
-        <img id="foto-ArabiaSaudita" src="./assets/targets/arabia-saudita.png" />
-        <img id="foto-Argelia"       src="./assets/targets/Argelia.png" />
-      </a-assets>
+  <a-scene
+    id="scene"
+    mindar-image="  
+      imageTargetSrc: /assets/targets/flagMexico.mind;
+      /* si hospedas MindAR local, descomenta y ajusta:
+      wasmPath: /lib/mindar/mindar-image-worker.wasm;
+      workerPath: /lib/mindar/mindar-image-worker.js;
+      */
+    "
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled:false"
+    device-orientation-permission-ui="enabled:false"
+    embedded loading-screen="enabled:true">
 
-      <!-- Luces -->
-      <a-entity light="type: directional; intensity: 1.15" position="1 1 1"></a-entity>
-      <a-entity light="type: ambient; intensity: 0.6"></a-entity>
+    <a-assets>
+      <!-- imagen que dibujaremos encima del marcador (puede ser la misma del Creator) -->
+      <img id="flag" src="/assets/targets/Mexico.png" />
+    </a-assets>
 
-      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+    <!-- Luces -->
+    <a-entity light="type: directional; intensity: 1.1" position="1 1 1"></a-entity>
+    <a-entity light="type: ambient; intensity: 0.6"></a-entity>
 
-      <!-- === Anchor 0: Arabia Saudita (PRIMERA imagen del .mind) === -->
-      <a-entity mindar-image-target="targetIndex: 0">
-        <a-image
-          src="#foto-ArabiaSaudita"
-          position="0 0 0.12"
-          width="1"
-          height="0.6"
-          material="side:double"
-          animation="property: position; to: 0 0.08 0.12; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
-        </a-image>
-        <a-text value="ARABIA SAUDITA" align="center" color="#fff" position="0 -0.55 0.12" width="2.4"></a-text>
+    <!-- Cámara -->
+    <a-camera position="0 0 0" look-controls="enabled:false"></a-camera>
+
+    <!-- Anchor del ÚNICO target del .mind (index 0) -->
+    <a-entity mindar-image-target="targetIndex: 0">
+      <!-- Plano con la bandera flotando -->
+      <a-image src="#flag" position="0 0 0.12" width="1" height="0.6"
+               material="side:double"
+               animation="property: position; to: 0 0.08 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate">
+      </a-image>
+
+      <!-- Cubo para confirmar detección (extra visual) -->
+      <a-box position="0.4 0.15 0.15" depth="0.06" height="0.06" width="0.06"
+             material="opacity:0.8"></a-box>
+
+      <!-- Rótulo -->
+      <a-entity id="label" position="0 -0.55 0.12" visible="false" scale="0 0 0">
+        <a-plane width="0.9" height="0.18"
+                 material="color:#111; opacity:0.65; transparent:true; side:double"></a-plane>
+        <a-entity text="value: MÉXICO; align:center; color:#fff; width:2.4" position="0 0 0.001"></a-entity>
       </a-entity>
+    </a-entity>
+  </a-scene>
 
-      <!-- === Anchor 1: Argelia (SEGUNDA imagen del .mind) === -->
-      <a-entity mindar-image-target="targetIndex: 1">
-        <a-image
-          src="#foto-Argelia"
-          position="0 0 0.12"
-          width="1"
-          height="0.6"
-          material="side:double"
-          animation="property: position; to: 0 0.08 0.12; dur: 1000; easing: easeInOutQuad; loop: true; dir: alternate">
-        </a-image>
-        <a-text value="ARGELIA" align="center" color="#fff" position="0 -0.55 0.12" width="2.4"></a-text>
-      </a-entity>
-    </a-scene>
+  <script>
+    const scene  = document.getElementById('scene');
+    const status = document.getElementById('status');
+    const label  = document.getElementById('label');
+    const pop = (el,to,dur=240)=> el.setAttribute('animation__scale',
+      {property:'scale', to:`${to} ${to} ${to}`, dur, easing:'easeOutCubic'});
 
-    <script>
-      const scene  = document.getElementById('scene');
-      const status = document.getElementById('status');
+    scene.addEventListener('arReady', ()=>{
+      console.log('✅ arReady');
+      status.textContent = 'Listo. Apunta al marcador…';
+    });
 
-      scene.addEventListener('arReady', ()=>{
-        status.textContent = 'Listo. Apunta a una de las dos banderas.';
-      });
-      scene.addEventListener('targetFound', ()=>{
-        status.style.display = 'none';
-      });
-      scene.addEventListener('targetLost', ()=>{
-        status.style.display = 'block';
-        status.textContent   = 'No veo el marcador. Vuelve a apuntar.';
-      });
-      window.addEventListener('load', ()=>{ status.style.display = 'block'; });
-    </script>
-  </body>
+    scene.addEventListener('arError', (e)=>{
+      console.error('❌ arError', e);
+      status.textContent = 'Error de cámara/HTTPS/privacidad.';
+    });
+
+    // estos eventos llegan desde el anchor activo
+    scene.addEventListener('targetFound', ()=>{
+      status.style.display = 'none';
+      label.setAttribute('visible','true'); pop(label,1,220);
+    });
+    scene.addEventListener('targetLost', ()=>{
+      status.style.display = 'block'; status.textContent = 'No veo el marcador. Vuelve a apuntar.';
+      pop(label,0,180); setTimeout(()=>label.setAttribute('visible','false'), 190);
+    });
+
+    window.addEventListener('load', ()=>{ status.style.display = 'block'; });
+  </script>
+</body>
 </html>
