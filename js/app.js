@@ -171,37 +171,104 @@ function addImage(anchor, imgId) {
   flagsList.push(img);
 }
 
-/* ===== Animaciones por tipo de modelo ===== */
+/* ===== Animaciones por tipo de modelo (más bruscas y llamativas) ===== */
 function applyPresetAnimations(modelId, el, posX, posY, posZ, scale) {
-  const bob = 0.08;
-  const slow = 1600, fast = 700;
+  const bob       = 0.08;   // para balón y dona (los dejamos como estaban)
+  const slow      = 1600;
+  const fast      = 700;
 
+  const strongBob = 0.18;   // para el resto: movimientos más grandes
+  const strongFast = 900;
+  const strongSlow = 1300;
+
+  // === BALÓN: LO DEJAMOS IGUAL ===
   if (modelId === 'mdlBalon') {
-    el.setAttribute('animation__bounce', `property: position; to: ${posX} ${posY + 0.12} ${posZ}; dur:${fast}; easing:easeInOutCubic; loop:true; dir:alternate`);
-    el.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur:4000; easing:linear; loop:true');
+    el.setAttribute(
+      'animation__bounce',
+      `property: position; to: ${posX} ${posY + 0.12} ${posZ}; dur:${fast}; easing:easeInOutCubic; loop:true; dir:alternate`
+    );
+    el.setAttribute(
+      'animation__spin',
+      'property: rotation; to: 0 360 0; dur:4000; easing:linear; loop:true'
+    );
   }
+  // === COPA: MÁS EPIC, SUBE Y BAJA MÁS, GIRA MÁS RÁPIDO, PULSEA ESCALA ===
   else if (modelId === 'mdlCopa') {
-    el.setAttribute('animation__float', `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
-    el.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur:8000; easing:linear; loop:true');
+    el.setAttribute(
+      'animation__float',
+      `property: position; to: ${posX} ${posY + strongBob} ${posZ}; dur:${strongSlow}; easing:easeInOutSine; loop:true; dir:alternate`
+    );
+    el.setAttribute(
+      'animation__spin',
+      'property: rotation; to: 0 360 0; dur:5000; easing:easeInOutCubic; loop:true'
+    );
+    el.setAttribute(
+      'animation__pulse',
+      `property: scale; to: ${scale * 1.2} ${scale * 1.2} ${scale * 1.2}; dur:900; easing:easeInOutQuad; loop:true; dir:alternate`
+    );
   }
+  // === BOTE: MÁS OLEAJE Y MÁS FLUCTUACIÓN ===
   else if (modelId === 'mdlBote') {
-    el.setAttribute('animation__sway', 'property: rotation; to: 0 0 8; dur:1800; easing:easeInOutSine; loop:true; dir:alternate');
-    el.setAttribute('animation__float', `property: position; to: ${posX} ${posY + bob} ${posZ}; dur:1800; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute(
+      'animation__sway',
+      'property: rotation; to: 0 0 15; dur:900; easing:easeInOutSine; loop:true; dir:alternate'
+    );
+    el.setAttribute(
+      'animation__float',
+      `property: position; to: ${posX} ${posY + strongBob} ${posZ}; dur:900; easing:easeInOutSine; loop:true; dir:alternate`
+    );
   }
+  // === DONA: LO DEJAMOS IGUAL ===
   else if (modelId === 'mdlDonut') {
-    el.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur:5000; easing:linear; loop:true');
-    el.setAttribute('animation__bob', `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute(
+      'animation__spin',
+      'property: rotation; to: 0 360 0; dur:5000; easing:linear; loop:true'
+    );
+    el.setAttribute(
+      'animation__bob',
+      `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`
+    );
   }
+  // === TAZA DE CAFÉ: MÁS “TEMBLOR” Y SUBE/Baja MÁS ===
   else if (modelId === 'mdlCoffee') {
-    el.setAttribute('animation__wobble', 'property: rotation; to: 4 0 -4; dur:1200; easing:easeInOutSine; loop:true; dir:alternate');
-    el.setAttribute('animation__bob', `property: position; to: ${posX} ${posY + bob/3} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
+    el.setAttribute(
+      'animation__wobble',
+      'property: rotation; to: 6 0 -6; dur:700; easing:easeInOutSine; loop:true; dir:alternate'
+    );
+    el.setAttribute(
+      'animation__bob',
+      `property: position; to: ${posX} ${posY + strongBob/2} ${posZ}; dur:${strongSlow}; easing:easeInOutSine; loop:true; dir:alternate`
+    );
   }
+  // === MODELOS DE PAÍSES (Arabia, Argentina, USA, Canada, Corea, Japón, México) ===
   else if (/^mdl(Arabia|Argentina|USA|Canada|Corea|Japon|Mexico)$/.test(modelId)) {
-    el.setAttribute('animation__hover', `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
-    el.setAttribute('animation__tilt', 'property: rotation; to: 0 15 0; dur:1800; easing:easeInOutSine; loop:true; dir:alternate');
-  } else {
-    el.setAttribute('animation__bob', `property: position; to: ${posX} ${posY + bob/2} ${posZ}; dur:${slow}; easing:easeInOutSine; loop:true; dir:alternate`);
-    el.setAttribute('animation__spin', 'property: rotation; to: 0 360 0; dur:7000; easing:linear; loop:true');
+    el.setAttribute(
+      'animation__hover',
+      `property: position; to: ${posX} ${posY + strongBob/2} ${posZ}; dur:${strongSlow}; easing:easeInOutSine; loop:true; dir:alternate`
+    );
+    el.setAttribute(
+      'animation__tilt',
+      'property: rotation; to: 0 25 0; dur:1000; easing:easeInOutSine; loop:true; dir:alternate'
+    );
+    el.setAttribute(
+      'animation__pulse',
+      `property: scale; to: ${scale * 1.15} ${scale * 1.15} ${scale * 1.15}; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate`
+    );
+  }
+  // === RESTO DE MODELOS (por si agregas más) ===
+  else {
+    el.setAttribute(
+      'animation__bob',
+      `property: position; to: ${posX} ${posY + strongBob/2} ${posZ}; dur:${strongSlow}; easing:easeInOutSine; loop:true; dir:alternate`
+    );
+    el.setAttribute(
+      'animation__spin',
+      'property: rotation; to: 0 360 0; dur:6000; easing:easeInOutCubic; loop:true'
+    );
+    el.setAttribute(
+      'animation__pulse',
+      `property: scale; to: ${scale * 1.1} ${scale * 1.1} ${scale * 1.1}; dur:1100; easing:easeInOutQuad; loop:true; dir:alternate`
+    );
   }
 }
 
