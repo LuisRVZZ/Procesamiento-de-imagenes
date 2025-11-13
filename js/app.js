@@ -40,8 +40,21 @@ const statsTable   = document.getElementById('statsTable')?.querySelector('tbody
 const statsNote    = document.getElementById('statsNote');
 const statsRefresh = document.getElementById('statsRefresh');
 
-let currentTargetIndex = null;
+let currentTargetIndex  = null;
 let currentCountryLabel = null;
+
+/* ===== Para controlar modelo actual con gestos ===== */
+let currentModel        = null;  // entidad del modelo actual
+let currentScaleFactor  = 1;     // 1 = escala base
+
+const gestureState = {
+  dragging: false,
+  lastX: 0,
+  lastY: 0,
+  pinching: false,
+  startDist: 0,
+  startScaleFactor: 1
+};
 
 /* ===== Defaults globales (modelos) ===== */
 const DEFAULT_MODEL_SCALE = 0.10;
@@ -141,11 +154,19 @@ function addImage(anchor, imgId) {
     console.warn(`⚠️ Falta <img id="${imgId}"> en <a-assets>.`);
   const img = document.createElement('a-image');
   img.setAttribute('src', `#${imgId}`);
-  img.setAttribute('position', '0 0 0.12');
-  img.setAttribute('width', '1');
-  img.setAttribute('height', '0.6');
+
+  // Ajustes para que se vea un poco más estable
+  img.setAttribute('position', '0 0 0.06');
+  img.setAttribute('width', '0.8');
+  img.setAttribute('height', '0.48');
+
   img.setAttribute('material', 'side: double');
-  img.setAttribute('animation__flag','property: position; to: 0 0.06 0.12; dur:1000; easing:easeInOutQuad; loop:true; dir:alternate');
+
+  img.setAttribute(
+    'animation__flag',
+    'property: position; to: 0 0.06 0.06; dur:1600; easing:easeInOutSine; loop:true; dir:alternate'
+  );
+
   anchor.appendChild(img);
   flagsList.push(img);
 }
@@ -187,7 +208,7 @@ function applyPresetAnimations(modelId, el, posX, posY, posZ, scale) {
 /* ===== Modelos + control Play/Pause ===== */
 function addModel(anchor, modelId, tx = {}) {
   const asset = document.getElementById(modelId);
-  if (!asset) { console.warn(`⚠️ Falta <a-asset-item id="${modelId}">`); return; }
+  if (!asset) { console.warn(`⚠️ Falta <a-asset-item id="${modelId}">`); return null; }
 
   const scale = tx.scale ?? DEFAULT_MODEL_SCALE;
   const rotY  = tx.rotY  ?? DEFAULT_MODEL_ROTY;
@@ -207,6 +228,8 @@ function addModel(anchor, modelId, tx = {}) {
 
   anchor.appendChild(el);
   modelsList.push(el);
+
+  return el; // 👈 importante para gestos
 }
 
 function setAnimationsPlaying(playing) {
@@ -231,6 +254,87 @@ function setAnimationsPlaying(playing) {
   });
 
   if (btnAnim) btnAnim.textContent = playing ? '⏸️ Pausar animación' : '▶️ Reanudar animación';
+}
+
+/* ===== Helpers para gestos (zoom/rotación) ===== */
+function touchDistance(t1, t2) {
+  const dx = t1.clientX - t2.clientX;
+  const dy = t1.clientY - t2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+function applyScaleFromFactor() {
+  if (!currentModel || currentTargetIndex == null) return;
+
+  const cfg = MAP[currentTargetIndex];
+  const baseScale = (cfg.tx && typeof cfg.tx.scale === 'number')
+    ? cfg.tx.scale
+    : DEFAULT_MODEL_SCALE;
+
+  const s = baseScale * currentScaleFactor;
+  currentModel.setAttribute('scale', `${s} ${s} ${s}`);
+}
+
+/* ===== Gestos táctiles (un dedo = girar, dos dedos = zoom) ===== */
+function onCanvasTouchStart(e) {
+  if (!currentModel) return;
+
+  if (e.touches.length === 1) {
+    gestureState.dragging = true;
+    gestureState.pinching = false;
+    gestureState.lastX = e.touches[0].clientX;
+    gestureState.lastY = e.touches[0].clientY;
+  } else if (e.touches.length === 2) {
+    gestureState.dragging = false;
+    gestureState.pinching = true;
+    gestureState.startDist = touchDistance(e.touches[0], e.touches[1]);
+    gestureState.startScaleFactor = currentScaleFactor;
+  }
+}
+
+function onCanvasTouchMove(e) {
+  if (!currentModel) return;
+
+  if (gestureState.pinching && e.touches.length === 2) {
+    e.preventDefault();
+    const newDist = touchDistance(e.touches[0], e.touches[1]);
+    if (gestureState.startDist <= 0) return;
+
+    let ratio = newDist / gestureState.startDist;
+    let newFactor = gestureState.startScaleFactor * ratio;
+
+    // Limitar el zoom
+    newFactor = Math.max(0.4, Math.min(2.0, newFactor));
+    currentScaleFactor = newFactor;
+    applyScaleFromFactor();
+  } else if (gestureState.dragging && e.touches.length === 1) {
+    e.preventDefault();
+    const t = e.touches[0];
+    const dx = t.clientX - gestureState.lastX;
+    const dy = t.clientY - gestureState.lastY;
+
+    gestureState.lastX = t.clientX;
+    gestureState.lastY = t.clientY;
+
+    const rot = currentModel.getAttribute('rotation') || { x:0, y:0, z:0 };
+
+    const newY = rot.y + dx * 0.2; // giro izquierda/derecha
+    const newX = Math.max(-45, Math.min(45, rot.x - dy * 0.2)); // inclinación suave
+
+    currentModel.setAttribute('rotation', `${newX} ${newY} ${rot.z}`);
+  }
+}
+
+function onCanvasTouchEnd(e) {
+  if (e.touches.length === 0) {
+    gestureState.dragging = false;
+    gestureState.pinching = false;
+  } else if (e.touches.length === 1) {
+    gestureState.pinching = false;
+    gestureState.dragging = true;
+    gestureState.lastX = e.touches[0].clientX;
+    gestureState.lastY = e.touches[0].clientY;
+  }
 }
 
 /* ===== Trivia utils ===== */
@@ -481,7 +585,7 @@ function buildAnchors() {
     anchor.setAttribute('mindar-image-target', `targetIndex: ${i}`);
 
     if (cfg.imgId)   addImage(anchor, cfg.imgId);
-    if (cfg.modelId) addModel(anchor, cfg.modelId, cfg.tx || {});
+    if (cfg.modelId) cfg.modelEl = addModel(anchor, cfg.modelId, cfg.tx || {}); // 👈 guardamos modelo
 
     // etiqueta
     const label = document.createElement('a-entity');
@@ -509,8 +613,10 @@ function buildAnchors() {
       status.style.display = 'none';
       if (toolbar) toolbar.style.display = 'flex';
 
-      currentTargetIndex = i;
+      currentTargetIndex  = i;
       currentCountryLabel = cfg.label;
+      currentModel        = cfg.modelEl || null; // 👈 para gestos
+      currentScaleFactor  = 1;
 
       if (btnTrivia) btnTrivia.style.display = 'inline-block';
       if (btnVideo)  btnVideo.style.display  = 'inline-block';
@@ -525,8 +631,9 @@ function buildAnchors() {
       status.textContent = 'No veo el marcador. Vuelve a apuntar.';
       if (toolbar) toolbar.style.display = 'none';
 
-      currentTargetIndex = null;
+      currentTargetIndex  = null;
       currentCountryLabel = null;
+      currentModel        = null; // 👈 limpiamos
 
       if (btnTrivia) btnTrivia.style.display = 'none';
       if (btnVideo)  btnVideo.style.display  = 'none';
@@ -556,6 +663,20 @@ window.addEventListener('load', () => {
   status.style.display = 'block';
   buildAnchors();
   setAnimationsPlaying(true); // cambia a false si quieres iniciar pausado
+});
+
+/* Gestos sobre el canvas de A-Frame */
+scene.addEventListener('loaded', () => {
+  const canvas = scene.renderer && scene.renderer.domElement
+    ? scene.renderer.domElement
+    : document.querySelector('canvas');
+
+  if (!canvas) return;
+
+  canvas.addEventListener('touchstart', onCanvasTouchStart, { passive: false });
+  canvas.addEventListener('touchmove',  onCanvasTouchMove,  { passive: false });
+  canvas.addEventListener('touchend',   onCanvasTouchEnd);
+  canvas.addEventListener('touchcancel', onCanvasTouchEnd);
 });
 
 /* ===== Botón Play/Pause ===== */

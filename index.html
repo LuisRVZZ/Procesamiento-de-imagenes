@@ -24,15 +24,20 @@
 
   <!-- Escena principal -->
   <a-scene
-    id="scene"
-    mindar-image="imageTargetSrc: ./assets/targets/todosBanderas.mind?v=1"
-    color-space="sRGB"
-    renderer="colorManagement: true, physicallyCorrectLights"
-    vr-mode-ui="enabled:false"
-    device-orientation-permission-ui="enabled:false"
-    embedded
-    loading-screen="enabled:true">
-
+     id="scene"
+      mindar-image="
+        imageTargetSrc: ./assets/targets/todosBanderas.mind?v=1;
+        filterMinCF: 0.0005;
+        filterBeta: 0.02;
+        warmupTolerance: 5;
+        missTolerance: 5
+      "
+      color-space="sRGB"
+      renderer="colorManagement: true, physicallyCorrectLights"
+      vr-mode-ui="enabled:false"
+      device-orientation-permission-ui="enabled:false"
+      embedded
+      loading-screen="enabled:true">
     <!-- Precarga de imágenes + modelos -->
     <a-assets>
       <!-- Banderas -->
